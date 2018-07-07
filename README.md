@@ -1,4 +1,4 @@
-```
+```shell
 git clone git@gitlab.com:daidex/front-end-tests.git
 ```
 ```
