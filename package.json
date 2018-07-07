@@ -1,0 +1,21 @@
+{
+  "name": "ejemplo",
+  "version": "1.0.0",
+  "description": "example realation of tables with sequelizer and driving of images.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "mkdir -p static/photos",
+    "start": "nodemon server"
+  },
+  "author": "Cesar Pineda <pinedacesar94@hotmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@0xproject/web3-wrapper": "^0.7.1",
+    "body-parser": "^1.15.1",
+    "connect-multiparty": "^2.0.0",
+    "ejs": "^2.4.2",
+    "express": "^4.13.4",
+    "superagent": "^3.8.3"
+  }
+}

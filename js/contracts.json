@@ -1,0 +1,113 @@
+{
+  "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359": {
+    "symbol": "DAI"
+  },
+  "0x01b3ec4aae1b8729529beb4965f27d008788b0eb": {
+    "symbol": "DPP"
+  },
+  "0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27": {
+    "symbol": "ZIL"
+  },
+  "0x0371a82e4a9d0a4312f3ee2ac9c6958512891372": {
+    "symbol": "STU"
+  },
+  "0x0200412995f1bafef0d3f97c4e28ac2515ec1ece": {
+    "symbol": "FLLW"
+  },
+  "0x08711d3b02c8758f2fb3ab4e80228418a7f8e39c": {
+    "symbol": "EDG"
+  },
+  "0x09d8b66c48424324b25754a873e290cae5dca439": {
+    "symbol": "NVT"
+  },
+  "0x4dc3643dbc642b72c158e7f3d2ff232df61cb6ce": {
+    "symbol": "AMB"
+  },
+  "0x4ceda7906a5ed2179785cd3a40a69ee8bc99c466": {
+    "symbol": "AION"
+  },
+  "0xfec0cf7fe078a500abf15f1284958f22049c2c7e": {
+    "symbol": "ART"
+  },
+  "0x4f3afec4e5a3f2a6a1a411def7d7dfe50ee057bf": {
+    "symbol": "DGX"
+  },
+  "0x523630976eb6147621b5c31c781ebe2ec2a806e0": {
+    "symbol": "eUSD"
+  },
+  "0x02ec0c9e6d3c08b8fb12fec51ccba048afbc36a6": {
+    "symbol": "STBL"
+  },
+  "0x514910771af9ca656af840dff83e8264ecf986ca": {
+    "symbol": "LINK"
+  },
+  "0x4df812f6064def1e5e029f1ca858777cc98d2d81": {
+    "symbol": "XAUR"
+  },
+  "0x076c97e1c869072ee22f8c91978c99b4bcb02591": {
+    "symbol": "CBT"
+  },
+  "0x0abdace70d3790235af448c88547603b945604ea": {
+    "symbol": "DNT"
+  },
+  "0x4d8fc1453a0f359e99c9675954e656d80d996fbf": {
+    "symbol": "BEE"
+  },
+  "0x4df47b4969b2911c966506e3592c41389493953b": {
+    "symbol": "FND"
+  },
+  "0x4aac461c86abfa71e9d00d9a2cde8d74e4e1aeea": {
+    "symbol": "ZINC"
+  },
+  "0x0e0989b1f9b8a38983c2ba8053269ca62ec9b195": {
+    "symbol": "POE"
+  },
+  "0x1183f92a5624d68e85ffb9170f16bf0443b4c242": {
+    "symbol": "QVT"
+  },
+  "0x1063ce524265d5a3a624f4914acd573dd89ce988": {
+    "symbol": "AIX"
+  },
+  "0x0f5d2fb29fb7d3cfee444a200298f468908cc942": {
+    "symbol": "MANA"
+  },
+  "0x0f513ffb4926ff82d7f60a05069047aca295c413": {
+    "symbol": "XSC"
+  },
+  "0x107c4504cd79c5d2696ea0030a8dd4e92601b82e": {
+    "symbol": "BLT"
+  },
+  "0x106aa49295b525fcf959aa75ec3f7dcbf5352f1c": {
+    "symbol": "RKT"
+  },
+  "0x7d4b8cce0591c9044a22ee543533b72e976e36c3": {
+    "symbol": "CAG"
+  },
+  "0x0d8775f648430679a709e98d2b0cb6250d2887ef": {
+    "symbol": "BAT"
+  },
+  "0x0cf0ee63788a0849fe5297f3407f701e122cc023": {
+    "symbol": "DATA"
+  },
+  "0x80fb784b7ed66730e8b1dbd9820afd29931aab03": {
+    "symbol": "LEND"
+  },
+  "0x814964b1bceaf24e26296d031eadf134a2ca4105": {
+    "symbol": "NEWB"
+  },
+  "0x865e3707a580f9db89304005cddd050ade8873eb": {
+    "symbol": "HIRE"
+  },
+  "0x8ae4bf2c33a8e667de34b54938b0ccd03eb8cc06": {
+    "symbol": "PTOY"
+  },
+  "0x8a854288a5976036a725879164ca3e91d30c6a1b": {
+    "symbol": "GET"
+  },
+  "0x8eb24319393716668d768dcec29356ae9cffe285": {
+    "symbol": "AGI"
+  },
+  "0x88fcfbc22c6d3dbaa25af478c578978339bde77a": {
+    "symbol": "FYN"
+  }
+}

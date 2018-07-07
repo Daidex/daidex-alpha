@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+			<style>
+			* {box-sizing: border-box;}
+
+			/* Create two equal columns that floats next to each other */
+			.column {
+	    	float: left;
+	    	width: 50%;
+	    	padding: 10px;
+	    	height: 300px; /* Should be removed. Only for demonstration */
+			}
+
+			/* Clear floats after the columns */
+			.row:after {
+	    	content: "";
+	    	display: table;
+	    	clear: both;
+			}
+			</style>
+  </head>
+	<body>
+		<div id="meta-mask-required"></div>
+		<div id="network"></div>
+		<div id="account"></div>
+		<div id="is-connected"></div>
+		<div id="web3-version"></div>
+		<div id="coinbase"></div>
+		<div id="current-gas-price"></div>
+		<div id="web3-provider"></div>
+		<br>
+		<h2>ERC-20 token balances</h2>
+		<div class="row">
+ 			<div class="column">
+				<h3>Using etherscan API call</h3>
+				<h4 id="balances-ethscan-loaded"></h4>
+				<p id="balances_by_ethscan"></p>
+			</div>
+ 			<div class="column">
+				<h3>Using web3 plugin</h3>
+				<h4 id="balances-web3-loaded"></h4>
+				<p id="balances_by_web3"></p>
+			</div>
+		</div>
+
+    <script type="text/javascript" src="api_call.js"></script>
+	</body>
+</html>

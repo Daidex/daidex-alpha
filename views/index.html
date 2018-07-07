@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bignumber.js/7.2.1/bignumber.min.js"></script>
+		<script src="jquery.min.js"></script>
+		<script src="superagent.js"></script>
+  </head>
+	<body>
+		<div id="meta-mask-required"></div>
+		<div id="network"></div>
+		<div id="account"></div>
+		<div id="is-connected"></div>
+		<div id="web3-version"></div>
+		<div id="coinbase"></div>
+		<div id="current-gas-price"></div>
+		<div id="web3-provider"></div>
+		<br>
+		<div id="balance">Balances: </div>
+		<button onclick="getBalance()">ETH balances</button>
+		<div id="weth-balance">Balances: </div>
+		<button onclick="getErc20Balance(WETH_CONTRACT_ADDRESS, account0, 'weth-balance')">WETH Balance</button>
+		<div id="dai-balance">Balances: </div>
+		<button onclick="getErc20Balance(DAI_CONTRACT_ADDRESS, account0, 'dai-balance')">DAI Balance</button>
+		<div id="mana-balance">Balances: </div>
+		<button onclick="getErc20Balance(MANA_CONTRACT_ADDRESS, account0, 'mana-balance')">MANA Balance</button>
+		<div id="bat-balance">Balances: </div>
+		<button onclick="getErc20Balance(BAT_CONTRACT_ADDRESS, account0, 'bat-balance')">BAT Balance</button>
+
+    <script type="text/javascript" src="app.js"></script>
+
+	</body>
+</html>
