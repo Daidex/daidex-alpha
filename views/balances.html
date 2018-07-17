@@ -9,11 +9,10 @@
 			/* Create two equal columns that floats next to each other */
 			.column {
 	    	float: left;
-	    	width: 50%;
-	    	padding: 10px;
-	    	height: 300px; /* Should be removed. Only for demonstration */
+	    	width: 25%;
+	    	padding: 5px;
+	    	/*height: 300px; Should be removed. Only for demonstration */
 			}
-
 			/* Clear floats after the columns */
 			.row:after {
 	    	content: "";
@@ -35,17 +34,30 @@
 		<h2>ERC-20 token balances</h2>
 		<div class="row">
  			<div class="column">
-				<h3>Using etherscan API call</h3>
+				<h3>Token Symbol</h3>
+				<h4 id="symbols-loaded"></h4>
+				<ul id="symbols_list"></ul>
+			</div>
+ 			<div class="column">
+				<h3>Using etherscan API</h3>
 				<h4 id="balances-ethscan-loaded"></h4>
-				<p id="balances_by_ethscan"></p>
+				<ul id="balances_by_ethscan"></ul>
 			</div>
  			<div class="column">
 				<h3>Using web3 plugin</h3>
 				<h4 id="balances-web3-loaded"></h4>
-				<p id="balances_by_web3"></p>
+				<ul id="balances_by_web3"></ul>
+			</div>
+ 			<div class="column">
+				<h3>Using Ox.js</h3>
+				<h4 id="balances-0x-loaded"></h4>
+				<ul id="balances_by_0x"></ul>
 			</div>
 		</div>
-
-    <script type="text/javascript" src="api_call.js"></script>
+    <script type="text/javascript" src="index.min.js"></script>
+    <script type="text/javascript" src="radar_relay.js"></script>
+    <script type="text/javascript" src="ether_scan.js"></script>
+    <script type="text/javascript" src="common_web3.js"></script>
+    <script type="text/javascript" src="balances.js"></script>
 	</body>
 </html>

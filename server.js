@@ -1,14 +1,12 @@
 const http      = require('http');
 const express   = require('express');
 const router    = require('./router');
-const rp        = require('request-promise');
 const fs        = require('fs');
 const port      = process.env.PORT || 3000;
 const app       = express();
 const server    = http.createServer(app);
-const request   = require('superagent');
 const multipart = require('connect-multiparty')
-const Web3      = require("web3");
+
 
 app.use(multipart())
 app.engine('html', require('ejs').renderFile)

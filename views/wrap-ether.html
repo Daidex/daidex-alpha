@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+  <div id="meta-mask-required"></div><br>
+  <div id="network"></div><br>
+  <div id="account"></div><br>
+  <div id="eth-balance"></div><br>
+  <div id="weth-balance"></div><br>
+  Amount to wrap [ETH]: <br>
+  <input type="text" id="amount" value="0.0001">
+  <button onclick="wrap()">WRAP!</button><br>
+  <div id="msg"></div><br>
+  Amount to unwrap [WETH]:<br>
+  <input type="text" id="w-amount" value="0.0001">
+  <button onclick="unwrap()">UNWRAP!</button><br>
+  <div id="w-msg"></div>
+  <script type="text/javascript" src="index.min.js"></script>
+  <script type="text/javascript" src="common_web3.js"></script>
+  <script type="text/javascript" src="wrap_ether.js"></script>
+</body>
+</html>

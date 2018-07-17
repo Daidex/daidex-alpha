@@ -9,12 +9,32 @@ router.get('/', (req, res) => {
   res.render('index')
 });
 
-router.get('/markets', (req, res) => {
-  res.render('markets')
+router.get('/token-pairs', (req, res) => {
+  res.render('token-pairs')
 });
 
-router.get('/api-call', (req, res) => {
-  res.render('api_call')
+router.get('/balances', (req, res) => {
+  res.render('balances')
+});
+
+router.get('/orderbook', (req, res) => {
+  res.render('orderbook')
+});
+
+router.get('/post-order', (req, res) => {
+  res.render('post-order')
+});
+
+router.get('/orders', (req, res) => {
+  res.render('orders')
+});
+
+router.get('/wrap-ether', (req, res) => {
+  res.render('wrap-ether')
+});
+
+router.get('/allowences', (req, res) => {
+  res.render('allowences')
 });
 
 module.exports = router

@@ -11,11 +11,13 @@
   "author": "Cesar Pineda <pinedacesar94@hotmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@0xproject/web3-wrapper": "^0.7.1",
+    "0x.js": "^0.38.5",
+    "@0xproject/web3-wrapper": "^0.7.2",
     "body-parser": "^1.15.1",
     "connect-multiparty": "^2.0.0",
     "ejs": "^2.4.2",
     "express": "^4.13.4",
-    "superagent": "^3.8.3"
+    "superagent": "^3.8.3",
+    "web3-provider-engine": "^14.0.6"
   }
 }
