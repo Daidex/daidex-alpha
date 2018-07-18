@@ -58,22 +58,84 @@
       .slider.round:before {
         border-radius: 50%;
       }
+      .loader {
+        border: 8px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 8px solid #3498db;
+        width: 25px;
+        height: 25px;
+        -webkit-animation: spin 2s linear infinite; /* Safari */
+        animation: spin 2s linear infinite;
+      }
+      /* Safari */
+      @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
     </style>
   </head>
   <body>
     <h2>Enabling Token Trading(Unlock tokens)</h2>
+
     <h4>WETH:</h4>
     <label class="switch">
-      <input type="checkbox" class="messageCheckbox" onchange="modifyAllowence('WETH');" unchecked>
-      <span class="slider round"></span>
-    </label><br>
+      <input type="checkbox" class="weth-checkbox" id="weth-checkbox" onclick="modifyAllowence('WETH');" disabled>
+      <span class="slider round" id="weth-span" hidden></span>
+      <div class="loader" id="weth-loader"></div>
+    </label>
+    <br>
     <label id="weth-msg"></label>
+
     <h4>ZRX:</h4>
     <label class="switch">
-      <input type="checkbox" class="messageCheckbox" onchange="modifyAllowence('ZRX');" unchecked>
-      <span class="slider round"></span>
-    </label><br>
+      <input type="checkbox" class="zrx-checkbox" id="zrx-checkbox" onclick="modifyAllowence('ZRX');" disabled>
+      <span class="slider round" id="zrx-span" hidden></span>
+      <div class="loader" id="zrx-loader"></div>
+    </label>
+    <br>
     <label id="zrx-msg"></label>
+
+    <h4>DAI:</h4>
+    <label class="switch">
+      <input type="checkbox" class="dai-checkbox" id="dai-checkbox" onclick="modifyAllowence('DAI');" disabled>
+      <span class="slider round" id="dai-span" hidden></span>
+      <div class="loader" id="dai-loader"></div>
+    </label>
+    <br>
+    <label id="dai-msg"></label>
+
+    <h4>DGD:</h4>
+    <label class="switch">
+      <input type="checkbox" class="dgd-checkbox" id="dgd-checkbox" onclick="modifyAllowence('DGD');" disabled>
+      <span class="slider round" id="dgd-span" hidden></span>
+      <div class="loader" id="dgd-loader"></div>
+    </label>
+    <br>
+    <label id="dgd-msg"></label>
+
+    <h4>MKR:</h4>
+    <label class="switch">
+      <input type="checkbox" class="mkr-checkbox" id="mkr-checkbox" onclick="modifyAllowence('MKR');" disabled>
+      <span class="slider round" id="mkr-span" hidden></span>
+      <div class="loader" id="mkr-loader"></div>
+    </label>
+    <br>
+    <label id="mkr-msg"></label>
+
+    <h4>REP:</h4>
+    <label class="switch">
+      <input type="checkbox" class="rep-checkbox" id="rep-checkbox" onclick="modifyAllowence('REP');" disabled>
+      <span class="slider round" id="rep-span" hidden></span>
+      <div class="loader" id="rep-loader"></div>
+    </label>
+    <br>
+    <label id="rep-msg"></label>
+
     <script type="text/javascript" src="common_web3.js"></script>
     <script type="text/javascript" src="bignumber.min.js"></script>
     <script type="text/javascript" src="index.min.js"></script>
