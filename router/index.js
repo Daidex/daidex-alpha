@@ -21,8 +21,8 @@ router.get('/orderbook', (req, res) => {
   res.render('orderbook')
 });
 
-router.get('/post-order', (req, res) => {
-  res.render('post-order')
+router.get('/fill-order', (req, res) => {
+  res.render('fill-order')
 });
 
 router.get('/orders', (req, res) => {

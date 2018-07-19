@@ -1,5 +1,6 @@
 function get_contract_symbol(contract_abi, contract_address){
   if(contract_abi == undefined){
+    console.log("No contract abi provided for: " + contract_address);
     return undefined;
   }
   let contract_instance = web3.eth.contract(contract_abi).at(contract_address);
@@ -28,8 +29,14 @@ function get_contract_symbol(contract_abi, contract_address){
         }
       });
     }else{
-      console.log(contract_instance);
-      resolve(contract_instance.address);
+      if ('name' in contract_instance){
+        contract_instance.name((error, name)=>{
+          resolve(name);
+        });
+      }else{
+        console.log()
+        resolve(contract_instance.address);
+      }
     }
   });
 }

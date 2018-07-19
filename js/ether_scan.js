@@ -1,4 +1,4 @@
-const etherscanBaseURL = "https://api.etherscan.io/api";
+let etherscanBaseURL = "https://api.etherscan.io/api";
 const etherscan_key = "HH2UBH51E51FKE1E16VP8E741X7G47NY";
 
 async function get_contract_abi(contract_address){
@@ -15,6 +15,9 @@ async function get_contract_abi(contract_address){
   .then(function(data) {
     if (data.status == 1){
       contract_abi = JSON.parse(data.result);
+    }
+    else{
+      console.log(data.result);
     }
   })
   .catch(function(error){

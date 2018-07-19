@@ -1,4 +1,4 @@
-const radarrelayBaseURL = "https://api.radarrelay.com/0x/v0/";
+let radarrelayBaseURL = "https://api.radarrelay.com/0x/v0/";
 
 async function get_rr_contract_addresses(){
   let rr_contract_addresses = [];
