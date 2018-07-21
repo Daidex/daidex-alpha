@@ -6,7 +6,7 @@ router.use(express.static('js'))
 router.use('/static', express.static('static'));
 
 router.get('/', (req, res) => {
-  res.render('index')
+  res.render('exchange')
 });
 
 router.get('/token-pairs', (req, res) => {

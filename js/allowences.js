@@ -52,7 +52,7 @@ async function enableTokenTrading(tokenAddress, accountAddress, netId){
 }
 
 async function disableTokenTrading(tokenAddress, accountAddress, netId){
-  let amount = new BigNumber.BigNumber("0");
+  let amount = new BigNumber("0");
   console.log(typeof amount)
   const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
   const disableTx = await zeroEx.token.setProxyAllowanceAsync(

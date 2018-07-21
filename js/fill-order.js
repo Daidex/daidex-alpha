@@ -47,12 +47,13 @@ window.addEventListener('load', async function() {
     case 42:
       ZRX_ADDRESS = networks.Kovan.ZRX;
       WETH_ADDRESS = networks.Kovan.WETH;
-      radarrelayBaseURL = "https://api.kovan.radarrelay.com/0x/v0/";
+      //radarrelayBaseURL = "https://api.kovan.radarrelay.com/0x/v0/";
       break;
     default:
   }
-  let orderbookResponse = await get_rr_orderbook(ZRX_ADDRESS, WETH_ADDRESS);
-  console.log(orderbookResponse);
+  //let orderbookResponse = await get_rr_orderbook(ZRX_ADDRESS, WETH_ADDRESS);
+  const radarRelay = new RadarRelay("https://api.kovan.radarrelay.com/0x/v0/");
+  let orderbookResponse = await radarRelay.getOrderbookAsync(ZRX_ADDRESS, WETH_ADDRESS);
 
   const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: networkId });
 
@@ -62,12 +63,25 @@ window.addEventListener('load', async function() {
     return orderRateB.comparedTo(orderRateA);
   });
 
-  // Calculate and print out the WETH/ZRX exchange rate for each order
-  const rates = sortedBids.map(order => {
+  const sortedAsks = orderbookResponse.asks.sort((orderA, orderB) => {
+    const orderRateA = new BigNumber(orderA.takerTokenAmount).div(new BigNumber(orderA.makerTokenAmount));
+    const orderRateB = new BigNumber(orderB.takerTokenAmount).div(new BigNumber(orderB.makerTokenAmount));
+    return orderRateA.comparedTo(orderRateB);
+  });
+
+  // Calculate and print out the WETH/ZRX exchange rate for each bid order
+  const bidsRates = sortedBids.map(order => {
       const rate = new BigNumber(order.makerTokenAmount).div(new BigNumber(order.takerTokenAmount));
       return rate.toString() + ' WETH/ZRX';
   });
-  console.log(rates);
+  console.log(bidsRates);
+
+  // Calculate and print out the WETH/ZRX exchange rate for each ask order
+  const asksRates = sortedAsks.map(order => {
+      const rate = new BigNumber(order.takerTokenAmount).div(new BigNumber(order.makerTokenAmount));
+      return rate.toString() + ' WETH/ZRX';
+  });
+  console.log(asksRates);
 
   // Get token information
   const wethTokenInfo = await zeroEx.tokenRegistry.getTokenBySymbolIfExistsAsync('WETH');
@@ -80,14 +94,17 @@ window.addEventListener('load', async function() {
   console.log('WETH Before: ' + ZeroEx.ZeroEx.toUnitAmount(wethBalanceBeforeFill, wethTokenInfo.decimals).toString());
 
   // Completely fill the best bid
-  const bidToFill = sortedBids[0];
-  console.log(bidToFill);
-  console.log(new BigNumber(bidToFill.takerTokenAmount));
-  //var amount = new BigNumber.BigNumber(bidToFill.takerTokenAmount);
-  var amount = BigNumber(String(bidToFill.takerTokenAmount));
-  //console.log(amount.);
-  const fillTxHash = await zeroEx.exchange.fillOrderAsync(bidToFill, BigNumber( new BigNumber(amount)), true, account);
-  await zeroEx.awaitTransactionMinedAsync(fillTxHash);
+  const bidToFill = sortedAsks[0];
+
+  bidToFill.takerTokenAmount = new BigNumber(bidToFill.takerTokenAmount);
+  bidToFill.makerTokenAmount = new BigNumber(bidToFill.makerTokenAmount);
+  bidToFill.takerFee = new BigNumber(bidToFill.takerFee);
+  bidToFill.makerFee = new BigNumber(bidToFill.makerFee);
+  bidToFill.expirationUnixTimestampSec = new BigNumber(bidToFill.expirationUnixTimestampSec);
+
+  const fillTxHash = await zeroEx.exchange.fillOrderAsync(bidToFill, bidToFill.takerTokenAmount, true, account);
+  const hash = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
+  console.log(hash);
 
   /*
   // Get balances after the fill
