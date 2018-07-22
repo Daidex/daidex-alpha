@@ -1,12 +1,12 @@
 const express = require('express')
 const router = express.Router()
 
-// Exportar estaticos..
-router.use(express.static('js'))
-router.use('/static', express.static('static'));
+// Exporting static files...
+router.use(express.static('.'));
+router.use('/static', express.static('/static'));
 
 router.get('/', (req, res) => {
-  res.render('index')
+  res.render('exchange')
 });
 
 router.get('/token-pairs', (req, res) => {
