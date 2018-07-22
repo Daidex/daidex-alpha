@@ -1,57 +1,122 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <!--Import Google Icon Font-->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
-    <!--Let browser know website is optimized for mobile-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  </head>
-  <body>
-    <div class="row">
-     <form class="col s12">
-       <div class="row">
-         <div class="input-field col s6">
-           <input placeholder="Placeholder" id="first_name" type="text" class="validate">
-           <label for="first_name">First Name</label>
-         </div>
-         <div class="input-field col s6">
-           <input id="last_name" type="text" class="validate">
-           <label for="last_name">Last Name</label>
-         </div>
-       </div>
-       <div class="row">
-         <div class="input-field col s12">
-           <input disabled value="I am not editable" id="disabled" type="text" class="validate">
-           <label for="disabled">Disabled</label>
-         </div>
-       </div>
-       <div class="row">
-         <div class="input-field col s12">
-           <input id="password" type="password" class="validate">
-           <label for="password">Password</label>
-         </div>
-       </div>
-       <div class="row">
-         <div class="input-field col s12">
-           <input id="email" type="email" class="validate">
-           <label for="email">Email</label>
-         </div>
-       </div>
-       <div class="row">
-         <div class="col s12">
-           This is an inline input field:
-           <div class="input-field inline">
-             <input id="email_inline" type="email" class="validate">
-             <label for="email_inline">Email</label>
-             <span class="helper-text" data-error="wrong" data-success="right">Helper text</span>
-           </div>
-         </div>
-       </div>
-     </form>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Daidex</title>
+  <link href="https://fonts.googleapis.com/css?family=Oxygen:300,400,700" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="/css/normalize.css" />
+  <link rel="stylesheet" type="text/css" href="/css/app.css" />
+</head>
+
+<body>
+  <header>
+    <nav class="menu">
+      <div class="logo">
+        <img src="./images/logo.png" alt="logo" width="160" />
+      </div>
+      <ul class="items">
+        <li class="item">
+          <a href="#">Exchange</a>
+        </li>
+        <li class="item">
+          <a href="#">How it works</a>
+        </li>
+        <li class="item">
+          <a href="#">Terms & conditions</a>
+        </li>
+        <li class="item">
+          <a href="#">contract</a>
+        </li>
+      </ul>
+    </nav>
+    <div class="container">
+      <div class="row content">
+        <div class="col description">
+          <h1 class="title">Trade ERC20 tokens using your own wallet</h1>
+          <p>Simple, fast and reliable solution to trade ERC-20 tokens across entire Ethereum network without risk</p>
+          <div class="buttons">
+            <button class="btn blue" type="button">Buy Now</button>
+            <button class="btn blue" type="button">Sell Now</button>
+          </div>
+        </div>
+        <div class="col form">
+          <!--h4>Select a token pair:</h4-->
+          <form class="" method="post">
+            <!--div class="input">
+                <label for="amount">Select token pair:</label>
+                <input id="amount" type="text" name="amount" placeholder="token amount" />
+              </div-->
+            <div class="row input-inline">
+              <div class="input col">
+                <div class="custom-select" id="tokenAList" style="width:170px;">
+                  <select id="token-select1" onchange="tokenSelected('token-select1');">
+                    <option value="0">Select a token</option>
+                  </select>
+                </div>
+                <br>
+                <table>
+                  <tr>
+                    <td>
+                      <label for="price" >Balance:</label>
+                    </td>
+                    <td>
+                      <label for="price" id="balanceA" style="text-align:right;">-</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label for="price">Trading availability:</label>
+                    </td>
+                    <td>
+                      <label class="switch">
+                        <input type="checkbox" class="zrx-checkbox" id="zrx-checkbox" onclick="" disabled>
+                        <span class="slider round" id="zrx-span" hidden></span>
+                        <div class="loader" id="zrx-loader"></div>
+                      </label>
+                    </td>
+                  </tr>
+                </table>
+                <br>
+                <input id="price" type="text" name="price" placeholder="amount to pay" style="text-align:right;"/>
+              </div>
+              <div class="input col">
+                <div class="custom-select" id="tokenBList" style="width:170px;">
+                  <select id="token-select2" onchange="tokenSelected('token-select2');">
+                    <option value="0">Select a token</option>
+                  </select>
+                </div>
+                <br>
+                <table>
+                  <tr>
+                    <td>
+                      <label for="price" >Balance:</label>
+                    </td>
+                    <td>
+                      <label for="price" id="balanceB" style="text-align:right;">-</label>
+                    </td>
+                  </tr>
+                </table>
+                <br>
+                <br>
+                <br>
+                <input id="price" type="text" name="price" placeholder="amount to receive" style="text-align:right;"/>
+              </div>
+            </div>
+            <div class="input checkbox">
+              <input id="terms" type="checkbox" name="terms" />
+              <label for="terms">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
+                magna aliqua.</label>
+            </div>
+            <button type="button" class="btn blue" onclick="console.log('exchenge!')">Exchange</button>
+          </form>
+        </div>
+      </div>
     </div>
-    <!-- Compiled and minified JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
-  </body>
+  </header>
+  <script type="text/javascript" src="js/index.min.js"></script>
+  <script type="text/javascript" src="js/exchange.js"></script>
+  <script type="text/javascript" src="js/select.js"></script>
+</body>
+
 </html>

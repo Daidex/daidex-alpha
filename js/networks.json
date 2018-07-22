@@ -45,5 +45,6 @@
     "ZRX": "0x00f58d6d585f84b2d7267940cede30ce2fe6eae8",
     "WETH": "0xc778417e063141139fce010982780140aa0cd5ab",
     "TokenRegistry": "0x4e9aad8184de8833365fea970cd9149372fdf1e6"
-  }
+  },
+  "Symbols":["WETH", "ZRX", "DAI", "DGD", "MKR", "REP"]
 }
