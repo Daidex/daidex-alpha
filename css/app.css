@@ -81,9 +81,10 @@ li.item {
 
 .form input {
   border: none;
-  font-size: 18px;
+  font-size: 14px;
   width: 100%;
   outline: 0;
+  text-align: left;
 }
 
 .form input[type="checkbox"] {
@@ -138,16 +139,62 @@ li.item {
 
 .btn:hover {
   box-shadow: 2px 2px 13px #00e5eb;
-  /* box-shadow: 3px 4px 5px #0000008a; */
   transition: .1s;
 }
 
 .blue {
-  /* background-color: blue; */
   background-image: linear-gradient(-136deg, rgb(0, 255, 182) 5%, rgb(0, 220, 255) 93%);
 }
- /*the container must be positioned relative:*/
- .custom-select {
+
+.input {
+  display: flex;
+  justify-content: space-between;
+  margin: .2em 0;
+}
+
+.input button {
+  width: 30%;
+  border-radius: 0 3px 3px 0;
+}
+
+.input input {
+  border-radius: 3px 0 0 3px;
+  border: none;
+  width: calc(70% - 2em);
+  font-size: 14px;
+  padding: 0 .5em;
+}
+
+.header-accounts {
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding-right: 1em;
+}
+
+.metamask {
+  color: white;
+  text-decoration: none;
+
+}
+
+.header-accounts .metamask::before {
+  content: '';
+  background-image: url(https://nogo10.gitbooks.io/ether-camp-live-studio-primer/content/metamask.png);
+  background-size: 34px 21px;
+  display: inline-block;
+  margin-right: 3px;
+  width: 25px;
+  height: 20px;
+  vertical-align: bottom;
+}
+
+
+
+/* -------------------------------------------------------------------------- */
+/*the container must be positioned relative:*/
+.custom-select {
   position: relative;
 }
 .custom-select select {
@@ -155,7 +202,7 @@ li.item {
   display: none; /*hide original SELECT element:*/
 }
 .select-selected {
-  background-image: linear-gradient(-136deg, rgb(0, 255, 182) 5%, rgb(0, 220, 255) 93%);
+  background-color: white;
 }
 /*style the arrow inside the select element:*/
 .select-selected:after {
@@ -166,7 +213,7 @@ li.item {
   width: 0;
   height: 0;
   border: 6px solid transparent;
-  border-color: #fff transparent transparent transparent;
+  border-color: #757575 transparent transparent transparent;
 }
 /*point the arrow upwards when the select box is open (active):*/
 .select-selected.select-arrow-active:after {
@@ -175,7 +222,7 @@ li.item {
 }
 /*style the items (options), including the selected item:*/
 .select-items div,.select-selected {
-  color: #ffffff;
+  color: #757575;
   padding: 8px 16px;
   border: 1px solid transparent;
   border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
@@ -184,8 +231,7 @@ li.item {
 /*style items (options):*/
 .select-items {
   position: absolute;
-  /* background-color: .blue; */
-  background-image: linear-gradient(-136deg, rgb(0, 255, 182) 5%, rgb(0, 220, 255) 93%);
+  background-color: white;
   top: 100%;
   left: 0;
   right: 0;

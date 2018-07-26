@@ -23,9 +23,7 @@
           <li class="item">
             <a href="#">Terms & conditions</a>
           </li>
-          <li class="item">
-            <a href="#">contract</a>
-          </li>
+          <li class="header-accounts"><a href="javascript:void(0)" class="metamask"><span>0x5985...af02</span></a></li>
         </ul>
       </nav>
       <div class="container">
@@ -34,11 +32,11 @@
             <h1 class="title">Trade ERC20 tokens using your own wallet</h1>
             <p>Simple, fast and reliable solution to trade ERC-20 tokens across entire Ethereum network without risk</p>
             <div class="input">
-              <input id="price" type="text" name="price" placeholder="amount to WRAP" style="text-align:right;"/>
+              <input id="price" type="text" name="price" placeholder="amount to WRAP"/>
               <button class="btn blue" type="button">wrap</button>
-              <br>
-              <br>
-              <input id="price" type="text" name="price" placeholder="amount to UNWRAP" style="text-align:right;"/>
+            </div>
+            <div class="input">
+              <input id="price" type="text" name="price" placeholder="amount to UNWRAP"/>
               <button class="btn blue" type="button">unwrap</button>
             </div>
           </div>
@@ -46,26 +44,30 @@
             <!--h4>Select a token pair:</h4-->
             <form class="" method="post">
               <!--div class="input">
-                  <label for="amount">Select token pair:</label>
-                  <input id="amount" type="text" name="amount" placeholder="token amount" />
-                </div-->
-              <div class="row input-inline">
-                <div class="input col">
-                  <div class="custom-select" id="tokenAList" style="width:170px;">
-                    <select id="token-select1" onchange="tokenSelected('token-select1');">
-                      <option value="0">Select a token</option>
-                    </select>
-                  </div>
-                  <br>
+              <label for="amount">Select token pair:</label>
+              <input id="amount" type="text" name="amount" placeholder="token amount" />
+            </div-->
+            <div class="row input-inline">
+              <div class="input col">
+                <div class="custom-select" id="tokenAList">
+                  <select id="token-select1" onchange="tokenSelected('token-select1');">
+                    <option value="0">Select a token</option>
+                  </select>
+                </div>
+                <div class="input">
                   <table>
                     <tr>
                       <td>
                         <label for="price" >Balance:</label>
                       </td>
                       <td>
-                        <label for="price" id="balanceA" style="text-align:right;">-</label>
+                        <label for="price" id="balanceA">-</label>
                       </td>
                     </tr>
+                  </table>
+                </div>
+                <div class="input">
+                  <table>
                     <tr>
                       <td>
                         <label for="price">Trading availability:</label>
@@ -79,38 +81,39 @@
                       </td>
                     </tr>
                   </table>
-                  <br>
-                  <input id="taker-amount" type="text" name="price" placeholder="amount to pay" style="text-align:right;"/>
+                </div>
+                <div class="input">
+                  <input id="taker-amount" type="text" name="price" placeholder="amount to pay"/>
+                </div>
+              </div>
+              <div class="input col">
+                <div class="custom-select" id="tokenBList">
+                  <select id="token-select2" onchange="tokenSelected('token-select2');">
+                    <option value="0">Select a token</option>
+                  </select>
                 </div>
                 <div class="input col">
-                  <div class="custom-select" id="tokenBList" style="width:170px;">
-                    <select id="token-select2" onchange="tokenSelected('token-select2');">
-                      <option value="0">Select a token</option>
-                    </select>
-                  </div>
-                  <br>
                   <table>
                     <tr>
                       <td>
                         <label for="price">Balance:</label>
                       </td>
                       <td>
-                        <label for="price" id="balanceB" style="text-align:right;">-</label>
+                        <label for="price" id="balanceB">-</label>
                       </td>
                     </tr>
                   </table>
-                  <br>
-                  <br>
-                  <br>
-                  <input id="maker-amount" type="text" name="price" placeholder="amount to receive" style="text-align:right;"/>
+                </div>
+                <div class="input col">
+                  <input id="maker-amount" type="text" name="price" placeholder="amount to receive"/>
                 </div>
               </div>
-              <br>
-              <button type="button" class="btn blue" onclick="exchange();">Exchange</button>
-            </form>
-          </div>
+            </div>
+            <button type="button" class="btn blue" onclick="exchange();">Exchange</button>
+          </form>
         </div>
       </div>
+    </div>
     </header>
     <script type="text/javascript" src="js/index.min.js"></script>
     <script type="text/javascript" src="js/bignumber.min.js"></script>
