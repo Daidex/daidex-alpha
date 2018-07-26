@@ -1,8 +1,8 @@
 ```shell
-git clone git@gitlab.com:daidex/front-end-tests.git
+git clone git@gitlab.com:daidex/daidex-test.git
 ```
 ```
-cd front-end-tests
+cd daidex-test
 ```
 ```
 npm install
