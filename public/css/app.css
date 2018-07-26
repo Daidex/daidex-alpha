@@ -82,7 +82,7 @@ li.item {
 .form input {
   border: none;
   font-size: 14px;
-  width: 100%;
+  width: calc(100% - 10px) !important;
   outline: 0;
   text-align: left;
 }
@@ -114,6 +114,7 @@ li.item {
 
 .description .title {
   font-size: 36px;
+  margin: 0;
 }
 
 /* Generics class */
