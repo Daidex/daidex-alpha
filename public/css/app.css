@@ -33,9 +33,8 @@ li.item {
 .logo {
   padding: .3em;
   border-radius: 5px;
-  height: 32px;
-  margin: .5em;
-  width: 160px;
+  margin: .3em .5em;
+  width: 130px;
 }
 
 .container {
