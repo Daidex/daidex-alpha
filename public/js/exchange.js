@@ -8,14 +8,37 @@ window.addEventListener('load', async function() {
     web3 = new Web3(web3.currentProvider);
     //document.getElementById('meta-mask-required').innerHTML = 'Metamask plugin detected';
   } else {
-    console.log('No web3? You should consider trying MetaMask!')
+    console.log('No web3? You should consider trying MetaMask!');
+    swal({ title: "MetaMask plugin no detected.",
+           text: 'To start trading please install <a href="https://metamask.io/">MetaMask</a> and fund your account.',
+           icon: "warning",
+           button: true,
+           dangerMode: false,
+    });
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
     //document.getElementById('meta-mask-required').innerHTML = 'You need <a href="https://metamask.io/">MetaMask</a> browser plugin to run this example'
     //web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/TsdoDuPiajm8bmj2lOje"));
-    //return;
+    // TODO block form and buttons
+    return;
   }
 
   clientAddress = web3.eth.coinbase;
+  if(clientAddress == undefined){
+    swal({ title: "MetaMask wallet locked.",
+           text: 'To start trading please login into your MataMask wallet.',
+           icon: "warning",
+           button: true,
+           dangerMode: false,
+    });
+    document.getElementById("client-address").innerHTML = "UNKNOWN";
+    // TODO block form and buttons
+  }else{
+    let clientAddressSubstr = clientAddress.substring(0, 8) +
+                              "..." +
+                              clientAddress.substring(clientAddress.length-6, clientAddress.length);
+    swal("MetaMask wallet connected.", "Address: " + clientAddressSubstr, "success");
+    document.getElementById("client-address").innerHTML = clientAddressSubstr;
+  }
   netId = await getNetworkId();
 
   await fetch("js/networks.json")
@@ -43,6 +66,7 @@ window.addEventListener('load', async function() {
     tokenSelect2.add(selectOption);
   }
   loadDropdownMenu();
+  console.log(document.getElementsByClassName("alert"));
 });
 
 async function tokenSelected(tokenList){
@@ -305,17 +329,20 @@ async function loadTokenAllowence(symbol){
 async function exchange(){
   this.takerTokenSymbol = document.getElementById("token-select1").value;
   this.makerTokenSymbol = document.getElementById("token-select2").value;
-  this.cond1 = this.takerTokenSymbol in networks.Kovan;
-  this.cond2 = this.makerTokenSymbol in networks.Kovan;
-  this.cond3 = this.makerTokenSymbol != this.takerTokenSymbol;
-  this.cond4 = "WETH" == this.makerTokenSymbol || "WETH" == this.takerTokenSymbol;
+  let cond1 = this.takerTokenSymbol in networks.Kovan;
+  let cond2 = this.makerTokenSymbol in networks.Kovan;
+  let cond3 = this.makerTokenSymbol != this.takerTokenSymbol;
+  let cond4 = "WETH" == this.makerTokenSymbol || "WETH" == this.takerTokenSymbol;
   this.takerAmount = parseFloat(document.getElementById("taker-amount").value);
   this.makerAmount = parseFloat(document.getElementById("maker-amount").value);
-  this.cond5 = this.takerAmount > 0;
-  // this.cond6 = this.makerAmount > 0;
-  this.cond6 = document.getElementById("token-checkbox").checked;
+  let cond5 = this.takerAmount > 0;
+  let cond6 = document.getElementById("token-checkbox").checked;
   this.takerTokenBalance = parseFloat(document.getElementById("balanceA").innerHTML);
-  this.cond7 = this.takerTokenBalance >= this.takerAmount;
+  let cond7 = this.takerTokenBalance >= this.takerAmount;
+  if(!cond3 || !cond4){ swal("Please select a valid token pairs."); return; }
+  if(!cond5){ swal("Please enter a valid amount."); return; }
+  if(!cond6){ swal("You need to enable " + this.takerTokenSymbol + " for trading."); return; }
+  if(!cond7){ swal("Insuficient funds for " + this.takerTokenSymbol); return; }
   if(cond1 && cond2 && cond3 && cond4 && cond5 && cond6 && cond7){
     const radarRelay = new RadarRelay("https://api.kovan.radarrelay.com/0x/v0/");
     // const ddex = new HttpClient("https://api.ercdex.com/api/standard/42/v0/");
@@ -395,6 +422,7 @@ async function exchange(){
         }
       }
       // filling orders
+      // danger color: f44336
       try {
         const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
         const hash = await zeroEx.awaitTransactionMinedAsync(fillTxHash);

@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 // Exporting static files...
-router.use(express.static('.'));
+router.use(express.static('public/'));
 router.use('/static', express.static('/static'));
 
 router.get('/', (req, res) => {
