@@ -35,6 +35,7 @@ function loadDropdownMenu(){
               break;
             }
           }
+          
           //code added for triggering a change event
           document.getElementById(s.id).dispatchEvent(new Event('change'));
           h.click();
@@ -72,5 +73,5 @@ function loadDropdownMenu(){
   }
   /*if the user clicks anywhere outside the select box,
   then close all select boxes:*/
-  document.addEventListener("click", closeAllSelect); 
+  document.addEventListener("click", closeAllSelect);
 }

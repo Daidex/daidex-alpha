@@ -30,7 +30,7 @@ window.addEventListener('load', async function() {
   let ZRX_ADDRESS;
   let WETH_ADDRESS;
 
-  await fetch("networks.json")
+  await fetch("js/networks.json")
   .then((resp) => resp.json())
   .then(function(data){
     networks = data;
@@ -93,7 +93,7 @@ window.addEventListener('load', async function() {
   console.log('ZRX Before: ' + ZeroEx.ZeroEx.toUnitAmount(zrxBalanceBeforeFill, zrxTokenInfo.decimals).toString());
   console.log('WETH Before: ' + ZeroEx.ZeroEx.toUnitAmount(wethBalanceBeforeFill, wethTokenInfo.decimals).toString());
 
-  // Completely fill the best bid
+  // Completely fill the best ask
   const bidToFill = sortedAsks[0];
 
   bidToFill.takerTokenAmount = new BigNumber(bidToFill.takerTokenAmount);
@@ -102,7 +102,18 @@ window.addEventListener('load', async function() {
   bidToFill.makerFee = new BigNumber(bidToFill.makerFee);
   bidToFill.expirationUnixTimestampSec = new BigNumber(bidToFill.expirationUnixTimestampSec);
 
+  /*
   const fillTxHash = await zeroEx.exchange.fillOrderAsync(bidToFill, bidToFill.takerTokenAmount, true, account);
+  const hash = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
+  console.log(hash);
+  */
+  /*
+  Interface OrderFillRequest{
+    signedOrder: 1,
+    takerTokenFillAmount: 1,
+  }
+  */
+  const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync([{signedOrder: bidToFill, takerTokenFillAmount: bidToFill.takerTokenAmount}], true, account);
   const hash = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
   console.log(hash);
 
