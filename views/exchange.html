@@ -27,33 +27,24 @@
           <li class="header-accounts"><a href="javascript:void(0)" class="metamask"><span id="client-address"></span></a></li>
         </ul>
       </nav>
-      <div class="alert" hidden>
-        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
-        <label for="price" id="tx-msg">Success! See your transaction status</label>
-      </div>
       <div class="container">
         <div class="row content">
           <div class="col description">
             <h1 class="title">Trade ERC20 tokens using your own wallet</h1>
-            <p>Simple, fast and reliable solution to trade ERC-20 tokens across entire Ethereum network without risk</p>
-            <p>Balance ETH: <span id="wrap-balance">0.00000002</span></p>
+            <p>You need to WRAP Ethereum to start trading. WETH is the base token in Daidex.</p>
+            <p>ETH balance: <span id="eth-balance">-</span></p>
             <div class="input">
-              <input id="price" type="text" name="price" placeholder="amount to WRAP"/>
-              <button class="btn blue" type="button">wrap</button>
+              <input id="amount-to-wrap" type="text" name="price" placeholder="amount to WRAP"/>
+              <button class="btn blue" type="button" onclick="wrap();">wrap</button>
             </div>
-            <p>Balance WETH: <span id="unwrap-balance">0.00005473</span></p>
+            <p>WETH balance: <span id="weth-balance">-</span></p>
             <div class="input">
-              <input id="price" type="text" name="price" placeholder="amount to UNWRAP"/>
-              <button class="btn blue" type="button">unwrap</button>
+              <input id="amount-to-unwrap" type="text" name="price" placeholder="amount to UNWRAP"/>
+              <button class="btn blue" type="button" onclick="unwrap();">unwrap</button>
             </div>
           </div>
           <div class="col form">
-            <!--h4>Select a token pair:</h4-->
             <form class="" method="post">
-              <!--div class="input">
-              <label for="amount">Select token pair:</label>
-              <input id="amount" type="text" name="amount" placeholder="token amount" />
-            </div-->
             <div class="row input-inline">
               <div class="input col">
                 <div class="custom-select" id="tokenAList">

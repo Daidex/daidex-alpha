@@ -8,13 +8,16 @@ window.addEventListener('load', async function() {
     web3 = new Web3(web3.currentProvider);
     //document.getElementById('meta-mask-required').innerHTML = 'Metamask plugin detected';
   } else {
-    console.log('No web3? You should consider trying MetaMask!');
+    let link = document.createElement("a");
+    link.innerText = "Go to metamask.io";
+    link.href = "https://metamask.io/";
+    link.target = "_blank";
     swal({ title: "MetaMask plugin no detected.",
-           text: 'To start trading please install <a href="https://metamask.io/">MetaMask</a> and fund your account.',
-           icon: "warning",
+           text: 'To start trading please install MetaMask and fund your account.',
+           icon: "error",
            button: true,
-           dangerMode: false,
-    });
+           content: link,
+           dangerMode: false });
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
     //document.getElementById('meta-mask-required').innerHTML = 'You need <a href="https://metamask.io/">MetaMask</a> browser plugin to run this example'
     //web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/TsdoDuPiajm8bmj2lOje"));
@@ -23,9 +26,20 @@ window.addEventListener('load', async function() {
   }
 
   clientAddress = web3.eth.coinbase;
+  netId = await getNetworkId();
+
+  await fetch("js/networks.json")
+  .then((resp) => resp.json())
+  .then(function(data){
+    networks = data;
+  })
+  .catch(function(error){
+    console.log(error);
+  });
+
   if(clientAddress == undefined){
     swal({ title: "MetaMask wallet locked.",
-           text: 'To start trading please login into your MataMask wallet.',
+           text: 'To start trading please log in to your MataMask wallet.',
            icon: "warning",
            button: true,
            dangerMode: false,
@@ -38,17 +52,14 @@ window.addEventListener('load', async function() {
                               clientAddress.substring(clientAddress.length-6, clientAddress.length);
     swal("MetaMask wallet connected.", "Address: " + clientAddressSubstr, "success");
     document.getElementById("client-address").innerHTML = clientAddressSubstr;
+    web3.eth.getBalance(clientAddress, function(error, balance){
+      document.getElementById("eth-balance").innerHTML = web3.fromWei(balance);
+    });
+    const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
+    zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
+      document.getElementById("weth-balance").innerHTML = parseFloat(ZeroEx.ZeroEx.toUnitAmount(balance, 18)).toFixed(6);
+    });
   }
-  netId = await getNetworkId();
-
-  await fetch("js/networks.json")
-  .then((resp) => resp.json())
-  .then(function(data){
-    networks = data;
-  })
-  .catch(function(error){
-    console.log(error);
-  });
 
   let tokenSelect1 = document.getElementById("token-select1");
   for(var tokenSymbol of networks.Symbols){
@@ -66,7 +77,6 @@ window.addEventListener('load', async function() {
     tokenSelect2.add(selectOption);
   }
   loadDropdownMenu();
-  console.log(document.getElementsByClassName("alert"));
 });
 
 async function tokenSelected(tokenList){
@@ -92,7 +102,7 @@ async function tokenSelected(tokenList){
       });
       document.getElementById("tokenBList").children[1].innerHTML = "WETH";
       document.getElementById("token-select2").value = "WETH";
-      zeroEx.token.getBalanceAsync(networks.Kovan.WETH, clientAddress).then((balance) => {
+      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
         document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
         .toUnitAmount(balance, 18)).toFixed(6);
       });
@@ -104,11 +114,11 @@ async function tokenSelected(tokenList){
       });
       document.getElementById("tokenAList").children[1].innerHTML = "WETH";
       document.getElementById("token-select1").value = "WETH";
-      zeroEx.token.getBalanceAsync(networks.Kovan.WETH, clientAddress).then((balance) => {
+      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
         document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
         .toUnitAmount(balance, 18)).toFixed(6);
       });
-      zeroEx.token.getProxyAllowanceAsync(networks.Kovan.WETH, clientAddress).then((tokenAllowenceAmount) => {
+      zeroEx.token.getProxyAllowanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((tokenAllowenceAmount) => {
         if (tokenAllowenceAmount > 0){
           document.getElementById('token-checkbox').checked = true;
         }else{
@@ -142,7 +152,42 @@ async function modifyAllowence(){
   if(checkedValue == true){
     try{
       msg = await enableTokenTrading(tokenAddress, clientAddress);
+      let link = document.createElement("a");
+      switch (netId) {
+        case 1:
+          link.href = "https://etherscan.io/tx/" + String(msg);
+          break;
+        case 42:
+          link.href = "https://kovan.etherscan.io/tx/" + String(msg);
+          break;
+        case 3:
+          link.href = "https://ropsten.etherscan.io/tx/" + String(msg);
+          break;
+        case 4:
+          link.href = "https://rinkeby.etherscan.io/tx/" + String(msg);
+          break;
+        default:
+          link.href = "https://etherscan.io/tx/" + String(msg);
+      }
+      link.innerText = msg.substring(0, 8) +
+                       "..." +
+                       msg.substring(msg.length-6, msg.length);
+      link.target = "_blank";
+      swal({
+        title: "Transaction accepted.",
+        text:  "Waiting transaction to be minned. Transaction id: ",
+        icon: "info",
+        button: false,
+        content: link,
+      });
       await zeroEx.awaitTransactionMinedAsync(msg, 1500);
+      swal({
+        title: tokenSymbol + " enabled for trading.",
+        text:  "Transaction id: ",
+        icon: "success",
+        button: true,
+        content: link,
+      });
     }
     catch(error){
       console.log(error);
@@ -151,7 +196,42 @@ async function modifyAllowence(){
   } else {
     try{
       msg = await disableTokenTrading(tokenAddress, clientAddress);
+      let link = document.createElement("a");
+      switch (netId) {
+        case 1:
+          link.href = "https://etherscan.io/tx/" + String(msg);
+          break;
+        case 42:
+          link.href = "https://kovan.etherscan.io/tx/" + String(msg);
+          break;
+        case 3:
+          link.href = "https://ropsten.etherscan.io/tx/" + String(msg);
+          break;
+        case 4:
+          link.href = "https://rinkeby.etherscan.io/tx/" + String(msg);
+          break;
+        default:
+          link.href = "https://etherscan.io/tx/" + String(msg);
+      }
+      link.innerText = msg.substring(0, 8) +
+                       "..." +
+                       msg.substring(msg.length-6, msg.length);
+      link.target = "_blank";
+      swal({
+        title: "Transaction accepted.",
+        text:  "Waiting transaction to be minned. Transaction id: ",
+        icon: "info",
+        button: false,
+        content: link,
+      });
       await zeroEx.awaitTransactionMinedAsync(msg, 1500);
+      swal({
+        title: tokenSymbol + " disabled for trading.",
+        text:  "Transaction id: ",
+        icon: "success",
+        button: true,
+        content: link,
+      });
     }catch(error){
       msg = error;
     }
@@ -175,7 +255,6 @@ async function enableTokenTrading(tokenAddress, accountAddress){
 
 async function disableTokenTrading(tokenAddress, accountAddress){
   let amount = new BigNumber("0");
-  console.log(typeof amount)
   const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
   const disableTx = await zeroEx.token.setProxyAllowanceAsync(
     tokenAddress,
@@ -344,7 +423,25 @@ async function exchange(){
   if(!cond6){ swal("You need to enable " + this.takerTokenSymbol + " for trading."); return; }
   if(!cond7){ swal("Insuficient funds for " + this.takerTokenSymbol); return; }
   if(cond1 && cond2 && cond3 && cond4 && cond5 && cond6 && cond7){
-    const radarRelay = new RadarRelay("https://api.kovan.radarrelay.com/0x/v0/");
+    // TODO get a relayer for every tesnets
+    // TODO add more relayers
+    switch (netId) {
+      case 1:
+        this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+        break;
+      case 42:
+        this.relayerURL = "https://api.kovan.radarrelay.com/0x/v0/";
+        break;
+      case 3:
+        this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+        break;
+      case 4:
+        this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+        break;
+      default:
+        this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+    }
+    const radarRelay = new RadarRelay(this.relayerURL);
     // const ddex = new HttpClient("https://api.ercdex.com/api/standard/42/v0/");
     if(this.takerTokenSymbol != "WETH"){ this.tokenA = this.takerTokenSymbol; }
     else{ this.tokenA = this.makerTokenSymbol; }
@@ -387,11 +484,59 @@ async function exchange(){
       // filling orders
       try {
         const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
+        let link = document.createElement("a");
+        switch (netId) {
+          case 1:
+            link.href = "https://etherscan.io/tx/" + String(fillTxHash);
+            break;
+          case 42:
+            link.href = "https://kovan.etherscan.io/tx/" + String(fillTxHash);
+            break;
+          case 3:
+            link.href = "https://ropsten.etherscan.io/tx/" + String(fillTxHash);
+            break;
+          case 4:
+            link.href = "https://rinkeby.etherscan.io/tx/" + String(fillTxHash);
+            break;
+          default:
+            link.href = "https://etherscan.io/tx/" + String(fillTxHash);
+        }
+        link.innerText = fillTxHash.substring(0, 8) +
+                         "..." +
+                         fillTxHash.substring(fillTxHash.length-6, fillTxHash.length);
+        link.target = "_blank";
+        swal({
+          title: "Transaction accepted.",
+          text:  "Waiting transaction to be minned. Transaction id: ",
+          icon: "info",
+          button: false,
+          content: link,
+        });
         const hash = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
-        console.log(hash);
+        swal({
+          title: "Transaction confirmed. ",
+          text:  "Transaction id: ",
+          icon: "success",
+          button: true,
+          content: link,
+        });
+
+        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.makerTokenSymbol), clientAddress).then((balance) => {
+          document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
+          .toUnitAmount(balance, 18)).toFixed(6);
+        });
+        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.takerTokenSymbol), clientAddress).then((balance) => {
+          document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
+          .toUnitAmount(balance, 18)).toFixed(6);
+        });
       }
       catch(error) {
-        console.log(error);
+        swal({
+          title: "Something went wrong.",
+          text:  error.message,
+          icon: "error",
+          button: true,
+        });
       }
     // Paying with another token, receiving WETH
     }else{
@@ -422,17 +567,255 @@ async function exchange(){
         }
       }
       // filling orders
-      // danger color: f44336
       try {
         const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
+        let link = document.createElement("a");
+        switch (netId) {
+          case 1:
+            link.href = "https://etherscan.io/tx/" + String(fillTxHash);
+            break;
+          case 42:
+            link.href = "https://kovan.etherscan.io/tx/" + String(fillTxHash);
+            break;
+          case 3:
+            link.href = "https://ropsten.etherscan.io/tx/" + String(fillTxHash);
+            break;
+          case 4:
+            link.href = "https://rinkeby.etherscan.io/tx/" + String(fillTxHash);
+            break;
+          default:
+            link.href = "https://etherscan.io/tx/" + String(fillTxHash);
+        }
+        link.innerText = fillTxHash.substring(0, 8) +
+                         "..." +
+                         fillTxHash.substring(fillTxHash.length-6, fillTxHash.length);
+        link.target = "_blank";
+        swal({
+          title: "Transaction accepted.",
+          text:  "Waiting transaction to be minned. Transaction id: ",
+          icon: "info",
+          button: false,
+          content: link,
+        });
         const hash = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
-        console.log(hash);
-      }
-      catch(error) {
-        console.log(error);
+        swal({
+          title: "Transaction confirmed. ",
+          text:  "Transaction id: ",
+          icon: "success",
+          button: true,
+          content: link,
+        });
+
+        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.makerTokenSymbol), clientAddress).then((balance) => {
+          document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
+          .toUnitAmount(balance, 18)).toFixed(6);
+        });
+        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.takerTokenSymbol), clientAddress).then((balance) => {
+          document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
+          .toUnitAmount(balance, 18)).toFixed(6);
+        });
+
+      }catch(error) {
+        swal({
+          title: "Something went wrong.",
+          text:  error.message,
+          icon: "error",
+          button: true,
+        });
       }
     }
-  } else {
-    console.log("wrong!");
+  }
+}
+
+function wrap_ether(amount, weth_address){
+  return new Promise(resolve => {
+    web3.eth.contract([{
+      "constant": false,
+      "inputs": [],
+      "name": "deposit",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    }])
+    .at(weth_address).deposit({
+      value: amount * (10**18),
+      // You can optionally pass in the gas price and gas limit you would like to use
+      //gasLimit: 80000,
+      //gasPrice: new BigNumber(10**10),
+    },(err, res) => {
+      if(res != undefined){
+        resolve(res);
+      }else {
+        resolve(err.message);
+      }
+    });
+  });
+}
+
+function unwrap_ether(amount, weth_address){
+  let value = amount * (10**18);
+  return new Promise(resolve => {
+    web3.eth.contract([{
+      "constant": false,
+      "inputs": [{
+        "name": "wad",
+        "type": "uint256"
+      }],
+      "name": "withdraw",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }])
+    .at(weth_address).withdraw(
+      value, {
+        // You can optionally pass in the gas price and gas limit you would like to use
+        //gasLimit: 80000,
+        //gasPrice: new BigNumber(10**10),
+      },(err, res) => {
+        if(res != undefined){
+          resolve(res);
+        }else {
+          resolve(err.message);
+        }
+      });
+    });
+}
+
+async function wrap(){
+  let amountToWrap = document.getElementById("amount-to-wrap").value;
+  amountToWrap = parseFloat(amountToWrap);
+  let ethBalance = await new Promise( (resolve) => {
+    web3.eth.getBalance(clientAddress, function(error, balance){
+      resolve(web3.fromWei(balance));
+    });
+  });
+  if(ethBalance > amountToWrap && amountToWrap > 0 && ethBalance > 0){
+    let msg;
+    msg = await wrap_ether(amountToWrap, getTokenAddressBySymbol("WETH"));
+    if(String(msg).substring(0,2) != "0x") {
+      swal({ title: "Error",
+             text: String(msg),
+             icon: "error",
+             button: true,
+             dangerMode: false,
+      });
+    }else{
+      msg = String(msg);
+      let link = document.createElement("a");
+      switch (netId) {
+        case 1:
+          link.href = "https://etherscan.io/tx/" + String(msg);
+          break;
+        case 42:
+          link.href = "https://kovan.etherscan.io/tx/" + String(msg);
+          break;
+        case 3:
+          link.href = "https://ropsten.etherscan.io/tx/" + String(msg);
+          break;
+        case 4:
+          link.href = "https://rinkeby.etherscan.io/tx/" + String(msg);
+          break;
+        default:
+          link.href = "https://etherscan.io/tx/" + String(msg);
+      }
+
+      link.innerText = msg.substring(0, 8) +
+                       "..." +
+                       msg.substring(msg.length-6, msg.length);
+      link.target = "_blank";
+      swal({
+        title: "Transaction accepted.",
+        text:  "Waiting transaction to be minned. Transaction id: ",
+        icon: "info",
+        button: false,
+        content: link,
+      });
+      const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
+      let message = await zeroEx.awaitTransactionMinedAsync(msg, 1500);
+      swal({
+        title: "Transaction confirmed. ",
+        text:  "Transaction id: ",
+        icon: "success",
+        button: true,
+        content: link,
+      });
+      // Updating ETH/WETH balances
+      web3.eth.getBalance(clientAddress, function(error, balance){
+        document.getElementById("eth-balance").innerHTML = parseFloat(web3.fromWei(balance)).toFixed(6);;
+      });
+      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
+        document.getElementById("weth-balance").innerHTML = parseFloat(ZeroEx.ZeroEx.toUnitAmount(balance, 18)).toFixed(6);
+      });
+    }
+  }else{
+    swal("Insuficient funds/Invalid value.");
+  }
+}
+
+async function unwrap(){
+  let amountToUnWrap = document.getElementById("amount-to-unwrap").value;
+  amountToUnWrap = parseFloat(amountToUnWrap);
+  const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
+  let wethBalance = await zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress)
+  if(wethBalance > amountToUnWrap && amountToUnWrap > 0 && wethBalance > 0){
+    let msg;
+    msg = await unwrap_ether(amountToUnWrap, getTokenAddressBySymbol("WETH"));
+    if(String(msg).substring(0,2) != "0x"){
+      swal({ title: "Error",
+             text: String(msg),
+             icon: "error",
+             button: true,
+             dangerMode: false,
+      });
+    }else{
+      msg = String(msg);
+      let link = document.createElement("a");
+      switch (netId) {
+        case 1:
+          link.href = "https://etherscan.io/tx/" + String(msg);
+          break;
+        case 42:
+          link.href = "https://kovan.etherscan.io/tx/" + String(msg);
+          break;
+        case 3:
+          link.href = "https://ropsten.etherscan.io/tx/" + String(msg);
+          break;
+        case 4:
+          link.href = "https://rinkeby.etherscan.io/tx/" + String(msg);
+          break;
+        default:
+          link.href = "https://etherscan.io/tx/" + String(msg);
+      }
+      link.innerText = msg.substring(0, 8) +
+                       "..." +
+                       msg.substring(msg.length-6, msg.length);
+      link.target = "_blank";
+      swal({
+        title: "Transaction accepted.",
+        text:  "Waiting transaction to be minned. Transaction id: ",
+        icon: "info",
+        button: false,
+        content: link,
+      });
+      let message = await zeroEx.awaitTransactionMinedAsync(msg, 1500);
+      swal({
+        title: "Transaction confirmed. ",
+        text:  "Transaction id: ",
+        icon: "success",
+        button: true,
+        content: link,
+      });
+      // Updating ETH/WETH balances
+      web3.eth.getBalance(clientAddress, function(error, balance){
+        document.getElementById("eth-balance").innerHTML = parseFloat(web3.fromWei(balance)).toFixed(6);;
+      });
+      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
+        document.getElementById("weth-balance").innerHTML = parseFloat(ZeroEx.ZeroEx.toUnitAmount(balance, 18)).toFixed(6);
+      });
+    }
+  }else{
+    swal("Insuficient funds/Invalid value.");
   }
 }
