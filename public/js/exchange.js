@@ -178,7 +178,7 @@ async function modifyAllowence(){
                        msg.substring(msg.length-6, msg.length);
       swal({
         title: "Transaction accepted.",
-        text:  "Waiting transaction to be minned. Transaction id: ",
+        text:  "Waiting transaction to be mined. Transaction id: ",
         icon: "info",
         button: false,
         content: link,
@@ -205,7 +205,7 @@ async function modifyAllowence(){
                        msg.substring(msg.length-6, msg.length);
       swal({
         title: "Transaction accepted.",
-        text:  "Waiting transaction to be minned. Transaction id: ",
+        text:  "Waiting transaction to be mined. Transaction id: ",
         icon: "info",
         button: false,
         content: link,
@@ -478,7 +478,7 @@ async function exchange(){
                          fillTxHash.substring(fillTxHash.length-6, fillTxHash.length);
         swal({
           title: "Transaction accepted.",
-          text:  "Waiting transaction to be minned. Transaction id: ",
+          text:  "Waiting transaction to be mined. Transaction id: ",
           icon: "info",
           button: false,
           content: link,
@@ -545,7 +545,7 @@ async function exchange(){
                          fillTxHash.substring(fillTxHash.length-6, fillTxHash.length);
         swal({
           title: "Transaction accepted.",
-          text:  "Waiting transaction to be minned. Transaction id: ",
+          text:  "Waiting transaction to be mined. Transaction id: ",
           icon: "info",
           button: false,
           content: link,
@@ -662,7 +662,7 @@ async function wrap(){
                        msg.substring(msg.length-6, msg.length);
       swal({
         title: "Transaction accepted.",
-        text:  "Waiting transaction to be minned. Transaction id: ",
+        text:  "Waiting transaction to be mined. Transaction id: ",
         icon: "info",
         button: false,
         content: link,
@@ -712,7 +712,7 @@ async function unwrap(){
                        msg.substring(msg.length-6, msg.length);
       swal({
         title: "Transaction accepted.",
-        text:  "Waiting transaction to be minned. Transaction id: ",
+        text:  "Waiting transaction to be mined. Transaction id: ",
         icon: "info",
         button: false,
         content: link,
