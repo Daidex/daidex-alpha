@@ -16,7 +16,7 @@ window.addEventListener('load', async function() {
     link.href = "https://metamask.io/";
     swal({ title: "MetaMask plugin no detected.",
            text: 'To start trading please install MetaMask and fund your account.',
-           icon: "error",
+           icon: "info",
            button: true,
            content: link,
            dangerMode: false });
