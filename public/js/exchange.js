@@ -1,17 +1,19 @@
+// global variables
 let networks;
 let clientAddress;
-let zeroEx;
 let netId;
+let link = document.createElement("a");;
+link.target = "_blank";
+let etherscanBaseURL = "";
+
 window.addEventListener('load', async function() {
   if (typeof web3 !== 'undefined') {
     // Use Mist/MetaMask's provider
     web3 = new Web3(web3.currentProvider);
     //document.getElementById('meta-mask-required').innerHTML = 'Metamask plugin detected';
   } else {
-    let link = document.createElement("a");
     link.innerText = "Go to metamask.io";
     link.href = "https://metamask.io/";
-    link.target = "_blank";
     swal({ title: "MetaMask plugin no detected.",
            text: 'To start trading please install MetaMask and fund your account.',
            icon: "error",
@@ -27,6 +29,24 @@ window.addEventListener('load', async function() {
 
   clientAddress = web3.eth.coinbase;
   netId = await getNetworkId();
+
+  // Given the current ethereum network, assign a base ethersan url.
+  switch (netId) {
+    case 1:
+      etherscanBaseURL = "https://etherscan.io/tx/";
+      break;
+    case 42:
+      etherscanBaseURL = "https://kovan.etherscan.io/tx/";
+      break;
+    case 3:
+      etherscanBaseURL = "https://ropsten.etherscan.io/tx/";
+      break;
+    case 4:
+      etherscanBaseURL = "https://rinkeby.etherscan.io/tx/";
+      break;
+    default:
+      etherscanBaseURL = "https://etherscan.io/tx/";
+  }
 
   await fetch("js/networks.json")
   .then((resp) => resp.json())
@@ -152,27 +172,10 @@ async function modifyAllowence(){
   if(checkedValue == true){
     try{
       msg = await enableTokenTrading(tokenAddress, clientAddress);
-      let link = document.createElement("a");
-      switch (netId) {
-        case 1:
-          link.href = "https://etherscan.io/tx/" + String(msg);
-          break;
-        case 42:
-          link.href = "https://kovan.etherscan.io/tx/" + String(msg);
-          break;
-        case 3:
-          link.href = "https://ropsten.etherscan.io/tx/" + String(msg);
-          break;
-        case 4:
-          link.href = "https://rinkeby.etherscan.io/tx/" + String(msg);
-          break;
-        default:
-          link.href = "https://etherscan.io/tx/" + String(msg);
-      }
+      link.href = etherscanBaseURL + String(msg);
       link.innerText = msg.substring(0, 8) +
                        "..." +
                        msg.substring(msg.length-6, msg.length);
-      link.target = "_blank";
       swal({
         title: "Transaction accepted.",
         text:  "Waiting transaction to be minned. Transaction id: ",
@@ -196,27 +199,10 @@ async function modifyAllowence(){
   } else {
     try{
       msg = await disableTokenTrading(tokenAddress, clientAddress);
-      let link = document.createElement("a");
-      switch (netId) {
-        case 1:
-          link.href = "https://etherscan.io/tx/" + String(msg);
-          break;
-        case 42:
-          link.href = "https://kovan.etherscan.io/tx/" + String(msg);
-          break;
-        case 3:
-          link.href = "https://ropsten.etherscan.io/tx/" + String(msg);
-          break;
-        case 4:
-          link.href = "https://rinkeby.etherscan.io/tx/" + String(msg);
-          break;
-        default:
-          link.href = "https://etherscan.io/tx/" + String(msg);
-      }
+      link.href = etherscanBaseURL + String(msg);
       link.innerText = msg.substring(0, 8) +
                        "..." +
                        msg.substring(msg.length-6, msg.length);
-      link.target = "_blank";
       swal({
         title: "Transaction accepted.",
         text:  "Waiting transaction to be minned. Transaction id: ",
@@ -408,8 +394,8 @@ async function loadTokenAllowence(symbol){
 async function exchange(){
   this.takerTokenSymbol = document.getElementById("token-select1").value;
   this.makerTokenSymbol = document.getElementById("token-select2").value;
-  let cond1 = this.takerTokenSymbol in networks.Kovan;
-  let cond2 = this.makerTokenSymbol in networks.Kovan;
+  let cond1 = this.takerTokenSymbol in networks.Kovan || this.takerTokenSymbol in networks.Mainnet;
+  let cond2 = this.makerTokenSymbol in networks.Kovan || this.makerTokenSymbol in networks.Mainnet;
   let cond3 = this.makerTokenSymbol != this.takerTokenSymbol;
   let cond4 = "WETH" == this.makerTokenSymbol || "WETH" == this.takerTokenSymbol;
   this.takerAmount = parseFloat(document.getElementById("taker-amount").value);
@@ -418,6 +404,8 @@ async function exchange(){
   let cond6 = document.getElementById("token-checkbox").checked;
   this.takerTokenBalance = parseFloat(document.getElementById("balanceA").innerHTML);
   let cond7 = this.takerTokenBalance >= this.takerAmount;
+  if(!cond1){ swal("Token " + this.takerTokenSymbol + " not supported."); return;  }
+  if(!cond2){ swal("Token " + this.makerTokenSymbol + " not supported."); return;  }
   if(!cond3 || !cond4){ swal("Please select a valid token pairs."); return; }
   if(!cond5){ swal("Please enter a valid amount."); return; }
   if(!cond6){ swal("You need to enable " + this.takerTokenSymbol + " for trading."); return; }
@@ -445,7 +433,7 @@ async function exchange(){
     // const ddex = new HttpClient("https://api.ercdex.com/api/standard/42/v0/");
     if(this.takerTokenSymbol != "WETH"){ this.tokenA = this.takerTokenSymbol; }
     else{ this.tokenA = this.makerTokenSymbol; }
-    console.log(this.tokenA);
+
     // Requesting orderbook from RadarRelay
     let orderbookResponse = await radarRelay.getOrderbookAsync(
       getTokenAddressBySymbol(this.tokenA),
@@ -484,27 +472,10 @@ async function exchange(){
       // filling orders
       try {
         const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
-        let link = document.createElement("a");
-        switch (netId) {
-          case 1:
-            link.href = "https://etherscan.io/tx/" + String(fillTxHash);
-            break;
-          case 42:
-            link.href = "https://kovan.etherscan.io/tx/" + String(fillTxHash);
-            break;
-          case 3:
-            link.href = "https://ropsten.etherscan.io/tx/" + String(fillTxHash);
-            break;
-          case 4:
-            link.href = "https://rinkeby.etherscan.io/tx/" + String(fillTxHash);
-            break;
-          default:
-            link.href = "https://etherscan.io/tx/" + String(fillTxHash);
-        }
+        link.href = etherscanBaseURL + String(fillTxHash);
         link.innerText = fillTxHash.substring(0, 8) +
                          "..." +
                          fillTxHash.substring(fillTxHash.length-6, fillTxHash.length);
-        link.target = "_blank";
         swal({
           title: "Transaction accepted.",
           text:  "Waiting transaction to be minned. Transaction id: ",
@@ -520,7 +491,6 @@ async function exchange(){
           button: true,
           content: link,
         });
-
         zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.makerTokenSymbol), clientAddress).then((balance) => {
           document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
           .toUnitAmount(balance, 18)).toFixed(6);
@@ -569,27 +539,10 @@ async function exchange(){
       // filling orders
       try {
         const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
-        let link = document.createElement("a");
-        switch (netId) {
-          case 1:
-            link.href = "https://etherscan.io/tx/" + String(fillTxHash);
-            break;
-          case 42:
-            link.href = "https://kovan.etherscan.io/tx/" + String(fillTxHash);
-            break;
-          case 3:
-            link.href = "https://ropsten.etherscan.io/tx/" + String(fillTxHash);
-            break;
-          case 4:
-            link.href = "https://rinkeby.etherscan.io/tx/" + String(fillTxHash);
-            break;
-          default:
-            link.href = "https://etherscan.io/tx/" + String(fillTxHash);
-        }
+        link.href = etherscanBaseURL + String(fillTxHash);
         link.innerText = fillTxHash.substring(0, 8) +
                          "..." +
                          fillTxHash.substring(fillTxHash.length-6, fillTxHash.length);
-        link.target = "_blank";
         swal({
           title: "Transaction accepted.",
           text:  "Waiting transaction to be minned. Transaction id: ",
@@ -703,28 +656,10 @@ async function wrap(){
       });
     }else{
       msg = String(msg);
-      let link = document.createElement("a");
-      switch (netId) {
-        case 1:
-          link.href = "https://etherscan.io/tx/" + String(msg);
-          break;
-        case 42:
-          link.href = "https://kovan.etherscan.io/tx/" + String(msg);
-          break;
-        case 3:
-          link.href = "https://ropsten.etherscan.io/tx/" + String(msg);
-          break;
-        case 4:
-          link.href = "https://rinkeby.etherscan.io/tx/" + String(msg);
-          break;
-        default:
-          link.href = "https://etherscan.io/tx/" + String(msg);
-      }
-
+      link.href = etherscanBaseURL + String(msg);
       link.innerText = msg.substring(0, 8) +
                        "..." +
                        msg.substring(msg.length-6, msg.length);
-      link.target = "_blank";
       swal({
         title: "Transaction accepted.",
         text:  "Waiting transaction to be minned. Transaction id: ",
@@ -771,27 +706,10 @@ async function unwrap(){
       });
     }else{
       msg = String(msg);
-      let link = document.createElement("a");
-      switch (netId) {
-        case 1:
-          link.href = "https://etherscan.io/tx/" + String(msg);
-          break;
-        case 42:
-          link.href = "https://kovan.etherscan.io/tx/" + String(msg);
-          break;
-        case 3:
-          link.href = "https://ropsten.etherscan.io/tx/" + String(msg);
-          break;
-        case 4:
-          link.href = "https://rinkeby.etherscan.io/tx/" + String(msg);
-          break;
-        default:
-          link.href = "https://etherscan.io/tx/" + String(msg);
-      }
+      link.href = etherscanBaseURL + String(msg);
       link.innerText = msg.substring(0, 8) +
                        "..." +
                        msg.substring(msg.length-6, msg.length);
-      link.target = "_blank";
       swal({
         title: "Transaction accepted.",
         text:  "Waiting transaction to be minned. Transaction id: ",
