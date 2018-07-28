@@ -9,6 +9,7 @@ router.get('/', (req, res) => {
   res.render('exchange')
 });
 
+/*
 router.get('/token-pairs', (req, res) => {
   res.render('token-pairs')
 });
@@ -36,5 +37,6 @@ router.get('/wrap-ether', (req, res) => {
 router.get('/allowences', (req, res) => {
   res.render('allowences')
 });
+*/
 
 module.exports = router
