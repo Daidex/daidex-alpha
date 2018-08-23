@@ -81,7 +81,7 @@
                   </table>
                 </div>
                 <div class="input">
-                  <input id="taker-amount" type="text" name="price" placeholder="amount to pay"/>
+                  <input id="taker-amount" type="text" name="price" onkeyup="displayAmountToReceiveOrPay('amountToPay');" placeholder="amount to pay"/>
                 </div>
               </div>
               <div class="input col">
@@ -103,10 +103,11 @@
                   </table>
                 </div>
                 <div class="input col">
-                  <input id="maker-amount" type="text" name="price" placeholder="amount to receive"/>
+                  <input id="maker-amount" type="text" name="price" onkeyup="displayAmountToReceiveOrPay('amountToReceive');" placeholder="amount to receive"/>
                 </div>
               </div>
             </div>
+            <!--label for="price" id = "market-price">1 wETH = 100 BAT</label-->
             <button type="button" class="btn blue" onclick="exchange();">Exchange</button>
           </form>
         </div>
@@ -114,7 +115,8 @@
     </div>
   </header>
     <script type="text/javascript" src="js/index.min.js"></script>
-    <script type="text/javascript" src="js/bignumber.min.js"></script>
+    <!--script type="text/javascript" src="js/0x-v1.0.1-rc.3.js"></script-->
+    <script type="text/javascript" src="js/bignumber-v5.min.js"></script>
     <script type="text/javascript" src="js/radarrelay.js"></script>
     <script type="text/javascript" src="js/select.js"></script>
     <script type="text/javascript" src="js/exchange.js"></script>

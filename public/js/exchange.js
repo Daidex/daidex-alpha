@@ -2,9 +2,13 @@
 let networks;
 let clientAddress;
 let netId;
-let link = document.createElement("a");;
+let link = document.createElement("a");
 link.target = "_blank";
 let etherscanBaseURL = "";
+let orderbooks = {};
+const TOKEN_DECIMALS = 18;
+const DECIMALS_TO_SHOW = 9;
+// BigNumber.config({ ERRORS: false });
 
 window.addEventListener('load', async function() {
   if (typeof web3 !== 'undefined') {
@@ -26,28 +30,21 @@ window.addEventListener('load', async function() {
     // TODO block form and buttons
     return;
   }
-
   clientAddress = web3.eth.coinbase;
   netId = await getNetworkId();
 
   // Given the current ethereum network, assign a base ethersan url.
   switch (netId) {
-    case 1:
-      etherscanBaseURL = "https://etherscan.io/tx/";
+    case 1: etherscanBaseURL = "https://etherscan.io/tx/";
       break;
-    case 42:
-      etherscanBaseURL = "https://kovan.etherscan.io/tx/";
+    case 42: etherscanBaseURL = "https://kovan.etherscan.io/tx/";
       break;
-    case 3:
-      etherscanBaseURL = "https://ropsten.etherscan.io/tx/";
+    case 3: etherscanBaseURL = "https://ropsten.etherscan.io/tx/";
       break;
-    case 4:
-      etherscanBaseURL = "https://rinkeby.etherscan.io/tx/";
+    case 4: etherscanBaseURL = "https://rinkeby.etherscan.io/tx/";
       break;
-    default:
-      etherscanBaseURL = "https://etherscan.io/tx/";
+    default: etherscanBaseURL = "https://etherscan.io/tx/";
   }
-
   await fetch("js/networks.json")
   .then((resp) => resp.json())
   .then(function(data){
@@ -56,7 +53,7 @@ window.addEventListener('load', async function() {
   .catch(function(error){
     console.log(error);
   });
-
+  subscribeToOrderbooksWebSockets();
   if(clientAddress == undefined){
     swal({ title: "MetaMask wallet locked.",
            text: 'To start trading please log in to your MataMask wallet.',
@@ -77,77 +74,232 @@ window.addEventListener('load', async function() {
     });
     const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
     zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
-      document.getElementById("weth-balance").innerHTML = parseFloat(ZeroEx.ZeroEx.toUnitAmount(balance, 18)).toFixed(6);
+      document.getElementById("weth-balance").innerHTML = parseFloat(
+        ZeroEx.ZeroEx.toUnitAmount(balance, TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
     });
   }
-
   let tokenSelect1 = document.getElementById("token-select1");
-  for(var tokenSymbol of networks.Symbols){
+  let tokenSelect2 = document.getElementById("token-select2");
+  networks.Symbols.map(tokenSymbol => {
     let selectOption = document.createElement("option");
     selectOption.text = tokenSymbol;
     selectOption.value = tokenSymbol;
     tokenSelect1.add(selectOption);
-  }
-
-  let tokenSelect2 = document.getElementById("token-select2");
-  for(var tokenSymbol of networks.Symbols){
-    let selectOption = document.createElement("option");
+    selectOption = document.createElement("option");
     selectOption.text = tokenSymbol;
     selectOption.value = tokenSymbol;
     tokenSelect2.add(selectOption);
-  }
+  });
   loadDropdownMenu();
 });
+
+function sortOrderbook(orderbook){
+  const sortedAsks = orderbook.asks.sort((orderA, orderB) => {
+    const orderRateA = new BigNumber(orderA.takerTokenAmount).div(new BigNumber(orderA.makerTokenAmount));
+    const orderRateB = new BigNumber(orderB.takerTokenAmount).div(new BigNumber(orderB.makerTokenAmount));
+    return orderRateA.comparedTo(orderRateB);
+  });
+  const sortedBids = orderbook.bids.sort((orderA, orderB) => {
+    const orderRateA = new BigNumber(orderA.makerTokenAmount).div(new BigNumber(orderA.takerTokenAmount));
+    const orderRateB = new BigNumber(orderB.makerTokenAmount).div(new BigNumber(orderB.takerTokenAmount));
+    return orderRateB.comparedTo(orderRateA);
+  });
+  sortedBids.map( bidOrder => {
+    bidOrder.takerTokenAmount = new BigNumber(bidOrder.takerTokenAmount);
+    bidOrder.makerTokenAmount = new BigNumber(bidOrder.makerTokenAmount);
+    bidOrder.takerFee = new BigNumber(bidOrder.takerFee);
+    bidOrder.makerFee = new BigNumber(bidOrder.makerFee);
+    bidOrder.expirationUnixTimestampSec = new BigNumber(bidOrder.expirationUnixTimestampSec);
+  });
+  sortedAsks.map(askOrder => {
+    askOrder.takerTokenAmount = new BigNumber(askOrder.takerTokenAmount);
+    askOrder.makerTokenAmount = new BigNumber(askOrder.makerTokenAmount);
+    askOrder.takerFee = new BigNumber(askOrder.takerFee);
+    askOrder.makerFee = new BigNumber(askOrder.makerFee);
+    askOrder.expirationUnixTimestampSec = new BigNumber(askOrder.expirationUnixTimestampSec);
+  });
+  return { 'asks': sortedAsks, 'bids': sortedBids };
+}
+
+const socket = new WebSocket('wss://ws.kovan.radarrelay.com/0x/v0/ws')
+socket.addEventListener('message', function (event) {
+  data = JSON.parse(event.data)
+  if(data.channel == 'orderbook'){
+    orderbooks[data.quoteTokenAddress] = sortOrderbook(data.payload);
+    console.log('Change detected in orderbook');
+  }
+});
+
+function subscribeToOrderbooksWebSockets(){
+  networks.Symbols.map( tokenSymbol => {
+    if (tokenSymbol != "WETH"){
+      socket.addEventListener('open', function (event) {
+          socket.send(`{
+            "type": "subscribe",
+            "channel": "orderbook",
+            "requestId": 1,
+            "payload": {
+              "baseTokenAddress": "${getTokenAddressBySymbol('WETH')}",
+              "quoteTokenAddress": "${getTokenAddressBySymbol(tokenSymbol)}",
+              "snapshot": true,
+              "limit": 100
+              }
+            }`);
+      });
+    }
+  });
+}
+/*
+returns amount to pay given asks or bids orders and amount to pay
+parameters:
+  * amountToPay -> BigNumber
+  * orders -> Array
+*/
+async function getAmountToReceive(amountToPay, orders){
+  let amountToReceive = new BigNumber(0);
+  const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
+  for(order of orders){
+    let takerFilledAmount = await zeroEx.exchange.getFilledTakerAmountAsync(
+      ZeroEx.ZeroEx.getOrderHashHex(order));
+    let takerFilledAmountCut = takerFilledAmount.div(new BigNumber(10**(TOKEN_DECIMALS - DECIMALS_TO_SHOW)));
+    takerFilledAmountCut = new BigNumber(parseInt(takerFilledAmountCut.toNumber()));
+    let rate = order.makerTokenAmount.div(order.takerTokenAmount);
+    let makerFilledAmount = takerFilledAmount.times(rate);
+    let makerFilledAmountCut = makerFilledAmount.div(new BigNumber(10**(TOKEN_DECIMALS - DECIMALS_TO_SHOW)));
+    makerFilledAmountCut = new BigNumber(parseInt(makerFilledAmountCut.toNumber()));
+    let takerTokenAmountCut = order.takerTokenAmount.div(new BigNumber(10**(TOKEN_DECIMALS - DECIMALS_TO_SHOW)));
+    takerTokenAmountCut = new BigNumber(parseInt(takerTokenAmountCut.toNumber())).minus(takerFilledAmountCut);
+    let makerTokenAmountCut = order.makerTokenAmount.div(new BigNumber(10**(TOKEN_DECIMALS - DECIMALS_TO_SHOW)));
+    makerTokenAmountCut = new BigNumber(parseInt(makerTokenAmountCut.toNumber())).minus(makerFilledAmountCut);;
+    if(takerTokenAmountCut.lt(amountToPay)) {
+      amountToReceive = amountToReceive.plus(makerTokenAmountCut);
+      amountToPay = amountToPay.minus(takerTokenAmountCut);
+    } else {
+      amountToReceive = amountToReceive.plus(amountToPay.times(rate));
+      break;
+    }
+  }
+  return amountToReceive;
+}
+
+async function displayAmountToReceiveOrPay(textBox){
+  this.takerTokenSymbol = document.getElementById("token-select1").value;
+  this.makerTokenSymbol = document.getElementById("token-select2").value;
+  if(this.takerTokenSymbol == '0' || this.makerTokenSymbol == '0') return;
+  const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
+  switch (textBox) {
+    case 'amountToPay':
+      // Read amount to pay
+      let takerTokenAmount = parseFloat(document.getElementById('taker-amount').value);
+      // validate amount
+      if(takerTokenAmount <= 0 || isNaN(takerTokenAmount)) {
+        document.getElementById('maker-amount').value = 0;
+        return;
+      }
+      takerTokenAmount = ZeroEx.ZeroEx.toBaseUnitAmount(new BigNumber(takerTokenAmount), DECIMALS_TO_SHOW);
+      let amountToReceive = new BigNumber(0);
+      // check if paying with wETH
+      if(this.takerTokenSymbol == 'WETH'){
+        // Choose an orderbook according to the selected token pairs
+        this.orderbook = orderbooks[getTokenAddressBySymbol(this.makerTokenSymbol)];
+        console.log(orderbook);
+
+        /*zeroEx.exchange.getOrdersInfoAsync(this.orderbook.bids).then( info => {
+          console.log(info);
+        });*/
+        amountToReceive = await getAmountToReceive(takerTokenAmount, this.orderbook.bids);
+      } else {
+        // paying with another token receiving wETH
+        this.orderbook = orderbooks[getTokenAddressBySymbol(this.takerTokenSymbol)];
+        console.log(orderbook)
+        amountToReceive = getAmountToReceive(takerTokenAmount, this.orderbook.asks);
+      }
+      document.getElementById("maker-amount").value = ZeroEx.ZeroEx.toUnitAmount(
+        new BigNumber(parseInt(amountToReceive)), DECIMALS_TO_SHOW).toNumber();
+      break;
+    case "amountToReceive"://Pay with WETH
+      document.getElementById("taker-amount").value = document.getElementById("maker-amount").value;
+      break;
+    default:
+      console.error("textbox id not found");
+  }
+}
 
 async function tokenSelected(tokenList){
   this.tokenSymbol = document.getElementById(tokenList).value;
   this.tokenAddress = getTokenAddressBySymbol(this.tokenSymbol);
-
   const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
+
   switch(tokenList){
     case "token-select1":
       zeroEx.token.getBalanceAsync(this.tokenAddress, clientAddress).then((balance) => {
         document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
-        .toUnitAmount(balance, 18)).toFixed(6);
+        .toUnitAmount(balance, TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
       });
+      // Load token allowence
       zeroEx.token.getProxyAllowanceAsync(this.tokenAddress, clientAddress).then((tokenAllowenceAmount) => {
-        if (tokenAllowenceAmount > 0){
+        if (tokenAllowenceAmount > 0)
           document.getElementById('token-checkbox').checked = true;
-        }else{
+        else
           document.getElementById('token-checkbox').checked = false;
-        }
         document.getElementById('token-checkbox').disabled = false;
         document.getElementById('loader').hidden = true;
         document.getElementById('token-span').hidden = false;
       });
-      document.getElementById("tokenBList").children[1].innerHTML = "WETH";
-      document.getElementById("token-select2").value = "WETH";
-      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
-        document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
-        .toUnitAmount(balance, 18)).toFixed(6);
-      });
+      if(this.tokenSymbol == "WETH"){
+        document.getElementById("tokenBList").children[1].innerHTML = "ZRX";
+        document.getElementById("token-select2").value = "ZRX";
+        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("ZRX"), clientAddress).then((balance) => {
+          document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
+          .toUnitAmount(balance, TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
+        });
+      }else{
+        document.getElementById("tokenBList").children[1].innerHTML = "WETH";
+        document.getElementById("token-select2").value = "WETH";
+        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
+          document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
+          .toUnitAmount(balance, TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
+        });
+      }
       break;
     case "token-select2":
       zeroEx.token.getBalanceAsync(this.tokenAddress, clientAddress).then((balance) => {
         document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
-        .toUnitAmount(balance, 18)).toFixed(6);
+        .toUnitAmount(balance, TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
       });
-      document.getElementById("tokenAList").children[1].innerHTML = "WETH";
-      document.getElementById("token-select1").value = "WETH";
-      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
-        document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
-        .toUnitAmount(balance, 18)).toFixed(6);
-      });
-      zeroEx.token.getProxyAllowanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((tokenAllowenceAmount) => {
-        if (tokenAllowenceAmount > 0){
-          document.getElementById('token-checkbox').checked = true;
-        }else{
-          document.getElementById('token-checkbox').checked = false;
-        }
-        document.getElementById('token-checkbox').disabled = false;
-        document.getElementById('loader').hidden = true;
-        document.getElementById('token-span').hidden = false;
-      });
+      if (this.tokenSymbol == "WETH"){
+        document.getElementById("tokenAList").children[1].innerHTML = "ZRX";
+        document.getElementById("token-select1").value = "ZRX";
+        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("ZRX"), clientAddress).then((balance) => {
+          document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
+          .toUnitAmount(balance, 18)).toFixed(6);
+        });
+        zeroEx.token.getProxyAllowanceAsync(getTokenAddressBySymbol("ZRX"), clientAddress).then((tokenAllowenceAmount) => {
+          if (tokenAllowenceAmount > 0)
+            document.getElementById('token-checkbox').checked = true;
+          else
+            document.getElementById('token-checkbox').checked = false;
+          document.getElementById('token-checkbox').disabled = false;
+          document.getElementById('loader').hidden = true;
+          document.getElementById('token-span').hidden = false;
+        });
+      }else{
+        document.getElementById("tokenAList").children[1].innerHTML = "WETH";
+        document.getElementById("token-select1").value = "WETH";
+        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((balance) => {
+          document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
+          .toUnitAmount(balance, 18)).toFixed(6);
+        });
+        zeroEx.token.getProxyAllowanceAsync(getTokenAddressBySymbol("WETH"), clientAddress).then((tokenAllowenceAmount) => {
+          if (tokenAllowenceAmount > 0)
+            document.getElementById('token-checkbox').checked = true;
+          else
+            document.getElementById('token-checkbox').checked = false;
+          document.getElementById('token-checkbox').disabled = false;
+          document.getElementById('loader').hidden = true;
+          document.getElementById('token-span').hidden = false;
+        });
+      }
       break;
   }
 }
@@ -381,11 +533,10 @@ function getTokenAddressBySymbol(symbol){
 }
 
 async function loadTokenAllowence(symbol){
-  if (await getTokenAllowence(symbol) > 0){
+  if (await getTokenAllowence(symbol) > 0)
     document.getElementById('token-checkbox').checked = true;
-  }else{
+  else
     document.getElementById('token-checkbox').checked = false;
-  }
   document.getElementById('token-checkbox').disabled = false;
   document.getElementById('loader').hidden = true;
   document.getElementById('token-span').hidden = false;
@@ -410,172 +561,136 @@ async function exchange(){
   if(!cond5){ swal("Please enter a valid amount."); return; }
   if(!cond6){ swal("You need to enable " + this.takerTokenSymbol + " for trading."); return; }
   if(!cond7){ swal("Insuficient funds for " + this.takerTokenSymbol); return; }
-  if(cond1 && cond2 && cond3 && cond4 && cond5 && cond6 && cond7){
-    // TODO get a relayer for every tesnets
-    // TODO add more relayers
-    switch (netId) {
-      case 1:
-        this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+  // TODO get a relayer for every tesnets
+  // TODO add more relayers
+  switch (netId) {
+    case 1: this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+      break;
+    case 42: this.relayerURL = "https://api.kovan.radarrelay.com/0x/v0/";
+      break;
+    case 3: this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+      break;
+    case 4: this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+      break;
+    default: this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+  }
+  const radarRelay = new RadarRelay(this.relayerURL);
+  const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
+  if(this.takerTokenSymbol != "WETH") this.tokenA = this.takerTokenSymbol;
+  else this.tokenA = this.makerTokenSymbol;
+  // Requesting orderbook from RadarRelay
+  let orderbookResponse = await radarRelay.getOrderbookAsync(
+    getTokenAddressBySymbol(this.tokenA),
+    getTokenAddressBySymbol("WETH")
+  );
+  const sortedOrderbook = sortOrderbook(orderbookResponse);
+  const sortedAsks = sortedOrderbook.asks;
+  const sortedBids = sortedOrderbook.bids;
+  let ordersToFill = [];
+  let takerTokenAmount = ZeroEx.ZeroEx.toBaseUnitAmount(new BigNumber(this.takerAmount), 18);
+  // Paying with WETH, receiving another token
+  if(this.takerTokenSymbol == "WETH"){
+    // building batch orders to fill
+    // TODO read amount of decimals from contract
+    for(bidOrder of sortedBids){
+      if(bidOrder.takerTokenAmount.lte(takerTokenAmount)) {
+        ordersToFill.push({ signedOrder: bidOrder, takerTokenFillAmount: bidOrder.takerTokenAmount });
+        takerTokenAmount.minus(bidOrder.takerTokenAmount);
+      } else {
+        ordersToFill.push({ signedOrder: bidOrder, takerTokenFillAmount: takerTokenAmount });
         break;
-      case 42:
-        this.relayerURL = "https://api.kovan.radarrelay.com/0x/v0/";
-        break;
-      case 3:
-        this.relayerURL = "https://api.radarrelay.com/0x/v0/";
-        break;
-      case 4:
-        this.relayerURL = "https://api.radarrelay.com/0x/v0/";
-        break;
-      default:
-        this.relayerURL = "https://api.radarrelay.com/0x/v0/";
+      }
     }
-    const radarRelay = new RadarRelay(this.relayerURL);
-    // const ddex = new HttpClient("https://api.ercdex.com/api/standard/42/v0/");
-    if(this.takerTokenSymbol != "WETH"){ this.tokenA = this.takerTokenSymbol; }
-    else{ this.tokenA = this.makerTokenSymbol; }
-
-    // Requesting orderbook from RadarRelay
-    let orderbookResponse = await radarRelay.getOrderbookAsync(
-      getTokenAddressBySymbol(this.tokenA),
-      getTokenAddressBySymbol("WETH")
-    );
-    console.log(orderbookResponse);
-    const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: netId });
-    // Paying with WETH, receiving another token
-    if(this.takerTokenSymbol == "WETH"){
-      // Sorting asks
-      const sortedAsks = orderbookResponse.asks.sort((orderA, orderB) => {
-        const orderRateA = new BigNumber(orderA.takerTokenAmount).div(new BigNumber(orderA.makerTokenAmount));
-        const orderRateB = new BigNumber(orderB.takerTokenAmount).div(new BigNumber(orderB.makerTokenAmount));
-        return orderRateA.comparedTo(orderRateB);
+    // filling orders
+    try {
+      const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
+      link.href = etherscanBaseURL + String(fillTxHash);
+      link.innerText = "See transaction details";
+      swal({
+        title: "Transaction accepted.",
+        text:  "Waiting transaction to be mined.",
+        icon: "info",
+        button: false,
+        content: link,
       });
-      // Preparing orders
-      for(let askOrder of sortedAsks) {
-        askOrder.takerTokenAmount = new BigNumber(askOrder.takerTokenAmount);
-        askOrder.makerTokenAmount = new BigNumber(askOrder.makerTokenAmount);
-        askOrder.takerFee = new BigNumber(askOrder.takerFee);
-        askOrder.makerFee = new BigNumber(askOrder.makerFee);
-        askOrder.expirationUnixTimestampSec = new BigNumber(askOrder.expirationUnixTimestampSec);
-      }
-      // building batch orders to fill
-      let ordersToFill = [];
-      let takerTokenAmount = ZeroEx.ZeroEx.toBaseUnitAmount(new BigNumber(this.takerAmount), 18);
-      for(let askOrder of sortedAsks) {
-        if(askOrder.takerTokenAmount.lte(takerTokenAmount)) {
-          ordersToFill.push({ signedOrder: askOrder, takerTokenFillAmount: askOrder.takerTokenAmount });
-          takerTokenAmount.minus(askOrder.takerTokenAmount);
-        } else {
-          ordersToFill.push({ signedOrder: askOrder, takerTokenFillAmount: takerTokenAmount });
-          break;
-        }
-      }
-      // filling orders
-      try {
-        const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
-        link.href = etherscanBaseURL + String(fillTxHash);
-        link.innerText = fillTxHash.substring(0, 8) +
-                         "..." +
-                         fillTxHash.substring(fillTxHash.length-6, fillTxHash.length);
-        swal({
-          title: "Transaction accepted.",
-          text:  "Waiting transaction to be mined. Transaction id: ",
-          icon: "info",
-          button: false,
-          content: link,
-        });
-        const hash = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
-        swal({
-          title: "Transaction confirmed. ",
-          text:  "Transaction id: ",
-          icon: "success",
-          button: true,
-          content: link,
-        });
-        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.makerTokenSymbol), clientAddress).then((balance) => {
-          document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
-          .toUnitAmount(balance, 18)).toFixed(6);
-        });
-        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.takerTokenSymbol), clientAddress).then((balance) => {
-          document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
-          .toUnitAmount(balance, 18)).toFixed(6);
-        });
-      }
-      catch(error) {
-        swal({
-          title: "Something went wrong.",
-          text:  error.message,
-          icon: "error",
-          button: true,
-        });
-      }
-    // Paying with another token, receiving WETH
-    }else{
-      // Sorting bids orders
-      const sortedBids = orderbookResponse.bids.sort((orderA, orderB) => {
-        const orderRateA = new BigNumber(orderA.makerTokenAmount).div(new BigNumber(orderA.takerTokenAmount));
-        const orderRateB = new BigNumber(orderB.makerTokenAmount).div(new BigNumber(orderB.takerTokenAmount));
-        return orderRateB.comparedTo(orderRateA);
+      const transactionData = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
+      let amountReceived = transactionData.logs[2].args.filledMakerTokenAmount;
+      let amountPaid = transactionData.logs[2].args.filledTakerTokenAmount;
+      swal({
+        title: "Transaction confirmed. ",
+        text:  `Amount received: ${ZeroEx.ZeroEx.toUnitAmount(amountReceived, TOKEN_DECIMALS)} ${this.makerTokenSymbol}
+                Amount paid: ${ZeroEx.ZeroEx.toUnitAmount(amountPaid, TOKEN_DECIMALS)} ${this.takerTokenSymbol}`,
+        icon: "success",
+        button: true,
+        content: link,
       });
-      // Preparing orders
-      for(let bidOrder of sortedBids) {
-        bidOrder.takerTokenAmount = new BigNumber(bidOrder.takerTokenAmount);
-        bidOrder.makerTokenAmount = new BigNumber(bidOrder.makerTokenAmount);
-        bidOrder.takerFee = new BigNumber(bidOrder.takerFee);
-        bidOrder.makerFee = new BigNumber(bidOrder.makerFee);
-        bidOrder.expirationUnixTimestampSec = new BigNumber(bidOrder.expirationUnixTimestampSec);
+      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.makerTokenSymbol), clientAddress).then((balance) => {
+        document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
+        .toUnitAmount(balance,TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
+      });
+      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.takerTokenSymbol), clientAddress).then((balance) => {
+        document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
+        .toUnitAmount(balance, TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
+      });
+    }
+    catch(error) {
+      swal({
+        title: "Something went wrong.",
+        text:  error.message,
+        icon: "error",
+        button: true,
+      });
+    }
+  // Paying with another token, receiving WETH
+  }else{
+    // building batch orders to fill
+    for(askOrder of sortedAsks){
+      if(askOrder.takerTokenAmount.lte(takerTokenAmount)) {
+        ordersToFill.push({ signedOrder: askOrder, takerTokenFillAmount: askOrder.takerTokenAmount });
+        takerTokenAmount.minus(askOrder.takerTokenAmount);
+      } else {
+        ordersToFill.push({ signedOrder: askOrder, takerTokenFillAmount: takerTokenAmount });
+        break;
       }
-      // building batch orders to fill
-      let ordersToFill = [];
-      let takerTokenAmount = ZeroEx.ZeroEx.toBaseUnitAmount(new BigNumber(this.takerAmount), 18);
-      for(let bidOrder of sortedBids) {
-        if(bidOrder.takerTokenAmount.lte(takerTokenAmount)) {
-          ordersToFill.push({ signedOrder: bidOrder, takerTokenFillAmount: bidOrder.takerTokenAmount });
-          takerTokenAmount.minus(bidOrder.takerTokenAmount);
-        } else {
-          ordersToFill.push({ signedOrder: bidOrder, takerTokenFillAmount: takerTokenAmount });
-          break;
-        }
-      }
-      // filling orders
-      try {
-        const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
-        link.href = etherscanBaseURL + String(fillTxHash);
-        link.innerText = fillTxHash.substring(0, 8) +
-                         "..." +
-                         fillTxHash.substring(fillTxHash.length-6, fillTxHash.length);
-        swal({
-          title: "Transaction accepted.",
-          text:  "Waiting transaction to be mined. Transaction id: ",
-          icon: "info",
-          button: false,
-          content: link,
-        });
-        const hash = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
-        swal({
-          title: "Transaction confirmed. ",
-          text:  "Transaction id: ",
-          icon: "success",
-          button: true,
-          content: link,
-        });
-
-        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.makerTokenSymbol), clientAddress).then((balance) => {
-          document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
-          .toUnitAmount(balance, 18)).toFixed(6);
-        });
-        zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.takerTokenSymbol), clientAddress).then((balance) => {
-          document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
-          .toUnitAmount(balance, 18)).toFixed(6);
-        });
-
-      }catch(error) {
-        swal({
-          title: "Something went wrong.",
-          text:  error.message,
-          icon: "error",
-          button: true,
-        });
-      }
+    }
+    // filling orders
+    try {
+      const fillTxHash = await zeroEx.exchange.batchFillOrdersAsync(ordersToFill, true, clientAddress);
+      link.href = etherscanBaseURL + String(fillTxHash);
+      link.innerText = "See transaction details";
+      swal({
+        title: "Transaction accepted.",
+        text:  "Waiting transaction to be mined.",
+        icon: "info",
+        button: false,
+        content: link,
+      });
+      const transactionData = await zeroEx.awaitTransactionMinedAsync(fillTxHash);
+      let amountReceived = transactionData.logs[2].args.filledMakerTokenAmount;
+      let amountPaid = transactionData.logs[2].args.filledTakerTokenAmount;
+      swal({
+        title: "Transaction confirmed. ",
+        text:  `Amount received: ${ZeroEx.ZeroEx.toUnitAmount(amountReceived, TOKEN_DECIMALS)} ${this.makerTokenSymbol}
+                Amount paid: ${ZeroEx.ZeroEx.toUnitAmount(amountPaid, TOKEN_DECIMALS)} ${this.takerTokenSymbol}`,
+        icon: "success",
+        button: true,
+        content: link,
+      });
+      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.makerTokenSymbol), clientAddress).then((balance) => {
+        document.getElementById("balanceB").innerHTML = parseFloat(ZeroEx.ZeroEx
+        .toUnitAmount(balance, TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
+      });
+      zeroEx.token.getBalanceAsync(getTokenAddressBySymbol(this.takerTokenSymbol), clientAddress).then((balance) => {
+        document.getElementById("balanceA").innerHTML = parseFloat(ZeroEx.ZeroEx
+        .toUnitAmount(balance, TOKEN_DECIMALS)).toFixed(DECIMALS_TO_SHOW);
+      });
+    }catch(error) {
+      swal({
+        title: "Something went wrong.",
+        text:  error.message,
+        icon: "error",
+        button: true,
+      });
     }
   }
 }

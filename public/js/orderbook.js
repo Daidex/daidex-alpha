@@ -21,7 +21,6 @@ window.addEventListener('load', async function() {
   const zeroEx = new ZeroEx.ZeroEx(web3.currentProvider, { networkId: currentNetId });
   let netName = prompt("Please enter ethereum network", "mainnet");
   netName = netName.toLowerCase();
-  console.log(netName);
   let metamasknet = await get_eth_network();
   metamasknet = metamasknet.toLowerCase();
   switch (netName) {
@@ -49,19 +48,18 @@ window.addEventListener('load', async function() {
 
   async function exec_async(){
     let rr_contract_addresses = await get_rr_contract_addresses();
-    console.log(rr_contract_addresses.length);
+    //console.log(rr_contract_addresses.length);
     let i = 0;
     let items = '';
     for (let contract_address of rr_contract_addresses){
-      console.log(i++);
       var orderbook = await get_rr_orderbook(WETH_CONTRACT_ADDRESS, contract_address);
       const item_init = '<div class="grid-item">';
       const item_end = '</div>';
       let num_bids = "Bids: " + orderbook.bids.length + " ";
       let num_asks = "Asks: " + orderbook.asks.length + "<br>";
-
       let contract_abi = await get_contract_abi(contract_address);
       let token_symbol =  await get_contract_symbol(contract_abi, contract_address);
+      //console.log(token_symbol + " " + contract_address);
       if(token_symbol == undefined){
         token_symbol = await zeroEx.tokenRegistry.getTokenIfExistsAsync(contract_address);
         if(token_symbol == undefined){
@@ -74,6 +72,7 @@ window.addEventListener('load', async function() {
       }
       items += item_init + market + num_bids + num_asks  + item_end;
       document.getElementById("orders").innerHTML = items;
+      console.log(market + " " + contract_address);
     }
   }
 
