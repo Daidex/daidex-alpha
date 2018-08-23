@@ -1,50 +1,39 @@
 {
   "Mainnet":
   {
-    "Exchange": "0x12459c951127e0c374ff9105dda097662a027093",
-    "TokenTransferProxy": "0x8da0d80f5007ef1e431dd2127178d224e32c2ef4",
     "ZRX": "0xe41d2489571d322189246dafa5ebde1f4699f498",
-    "EtherToken": "0x2956356cd2a2bf3202f771f50d3d14a367b48070",
     "WETH": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-    "DAI": "0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359",
-    "DGD": "0xE0B7927c4aF23765Cb51314A0E0521A9645F0E2A",
+    "DAI": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359",
+    "DGD": "0xe0b7927c4af23765cb51314a0e0521a9645f0e2a",
     "MKR": "0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2",
-    "REP": "0x1985365e9f78359a9B6AD760e32412f4a445E862",
-    "MultiSigWalletWithTimeLockExceptRemoveAuthorizedAddress": "0x01d9f4d104668cdc0b6d13c45dff5e15d58d8f28",
-    "TokenRegistry": "0x926a74c5c36adf004c87399e65f75628b0f98d2c"
+    "REP": "0x1985365e9f78359a9b6ad760e32412f4a445e862",
+    "BAT": "0x0d8775f648430679a709e98d2b0cb6250d2887ef",
+    "MANA": "0x0f5d2fb29fb7d3cfee444a200298f468908cc942",
+    "ZIL": "0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27",
+    "MLN": "0xbeb9ef514a379b997e0798fdcc901ee474b6d9a1",
+    "REQ": "0x8f8221afbb33998d8584a2b05749ba73c37a938a",
+    "STORM": "0xd0a4b8946cb52f0661273bfbc6fd0e0c75fc6433",
+    "AION": "0x4ceda7906a5ed2179785cd3a40a69ee8bc99c466"
   },
   "Kovan":
   {
-    "Exchange": "0x90fe2af704b34e0224bf2299c838e04d4dcf1364",
-    "TokenTransferProxy": "0x087eed4bc1ee3de49befbd66c662b434b15d49d4",
     "ZRX": "0x6ff6c0ff1d68b964901f986d4c9fa3ac68346570",
-    "EtherToken": "0x05d090b51c40b020eab3bfcb6a2dff130df22e9c",
     "WETH": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
-    "DAI": "0xC4375B7De8af5a38a93548eb8453a498222C4fF2",
+    "DAI": "0xc4375b7de8af5a38a93548eb8453a498222c4ff2",
     "DGD": "0xeee3870657e4716670f185df08652dd848fe8f7e",
-    "MKR": "0x1Dad4783cf3fe3085C1426157aB175A6119A04bA",
-    "REP": "0xB18845c260F680d5B9D84649638813E342E4F8C9",
-    "MultiSigWalletWithTimeLockExceptRemoveAuthorizedAddress": "0x9301a2b0dca791ba27b1a074aba3bf47bcd80cb9",
-    "TokenRegistry": "0xf18e504561f4347bea557f3d4558f559dddbae7f"
+    "MKR": "0x1dad4783cf3fe3085c1426157ab175a6119a04ba",
+    "REP": "0xb18845c260f680d5b9d84649638813e342e4f8c9"
   },
   "Ropsten":
   {
-    "Exchange": "0x479cc461fecd078f766ecc58533d6f69580cf3ac",
-    "TokenTransferProxy": "0x4e9aad8184de8833365fea970cd9149372fdf1e6",
     "ZRX": "0xa8e9fa8f91e5ae138c74648c9c304f1c75003a8d",
-    "EtherToken": "0xc00fd9820cd2898cc4c054b7bf142de637ad129a",
     "WETH": "0xc778417e063141139fce010982780140aa0cd5ab",
-    "DAI":"0xf3f54F3f9f99b119887BeAaf2E5045516A1766d2",
-    "MultiSigWalletWithTimeLockExceptRemoveAuthorizedAddress": "0x4f7a0ca862448c6457076cf3c86fa7a1f17988e0",
-    "TokenRegistry": "0x6b1a50f0bb5a7995444bd3877b22dc89c62843ed"
+    "DAI":"0xf3f54F3f9f99b119887BeAaf2E5045516A1766d2"
   },
   "Rinkeby":
   {
-    "Exchange": "0x1d16ef40fac01cec8adac2ac49427b9384192c05",
-    "TokenTransferProxy": "0xa8e9fa8f91e5ae138c74648c9c304f1c75003a8d",
     "ZRX": "0x00f58d6d585f84b2d7267940cede30ce2fe6eae8",
-    "WETH": "0xc778417e063141139fce010982780140aa0cd5ab",
-    "TokenRegistry": "0x4e9aad8184de8833365fea970cd9149372fdf1e6"
+    "WETH": "0xc778417e063141139fce010982780140aa0cd5ab"
   },
   "Symbols":["WETH", "ZRX", "DAI", "DGD", "MKR", "REP"]
 }
