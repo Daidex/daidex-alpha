@@ -1,14 +1,14 @@
 {
-  "name": "ejemplo",
-  "version": "1.0.0",
-  "description": "example realation of tables with sequelizer and driving of images.",
+  "name": "Daidex",
+  "version": "0.1.0",
+  "description": "ERC-20 Tokens decentralized exchange web app.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "mkdir -p static/photos",
     "start": "nodemon server"
   },
-  "author": "Cesar Pineda <pinedacesar94@hotmail.com>",
+  "author": "César Pineda <pinedacesar94@hotmail.com>",
   "license": "MIT",
   "dependencies": {
     "0x.js": "^0.38.5",
@@ -17,6 +17,7 @@
     "connect-multiparty": "^2.0.0",
     "ejs": "^2.4.2",
     "express": "^4.13.4",
+    "nodemon": "^1.18.3",
     "superagent": "^3.8.3",
     "web3-provider-engine": "^14.0.6"
   }
