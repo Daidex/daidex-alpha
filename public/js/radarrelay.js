@@ -3,7 +3,7 @@ class RadarRelay{
     this.baseURL = baseURL;
   }
 
-  getOrderbookAsync(base_token_address, quote_token_address){
+  getOrderbookAsync(quote_token_address, base_token_address){
     let url = new URL(this.baseURL + 'orderbook');
     url.search = new URLSearchParams({
       baseTokenAddress: base_token_address,
